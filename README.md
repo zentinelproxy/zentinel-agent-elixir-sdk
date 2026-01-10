@@ -1,10 +1,42 @@
-# Sentinel Agent Elixir SDK
+<div align="center">
 
-An Elixir SDK for building agents that integrate with the [Sentinel](https://github.com/raskell-io/sentinel) reverse proxy.
+<h1 align="center">
+  Sentinel Agent Elixir SDK
+</h1>
 
-## Installation
+<p align="center">
+  <em>Build agents that extend Sentinel's security and policy capabilities.</em><br>
+  <em>Inspect, block, redirect, and transform HTTP traffic.</em>
+</p>
 
-Add `sentinel_agent_sdk` to your list of dependencies in `mix.exs`:
+<p align="center">
+  <a href="https://elixir-lang.org/">
+    <img alt="Elixir" src="https://img.shields.io/badge/Elixir-1.17+-4b275f?logo=elixir&logoColor=white&style=for-the-badge">
+  </a>
+  <a href="https://github.com/raskell-io/sentinel">
+    <img alt="Sentinel" src="https://img.shields.io/badge/Built%20for-Sentinel-f5a97f?style=for-the-badge">
+  </a>
+  <a href="LICENSE">
+    <img alt="License" src="https://img.shields.io/badge/License-Apache--2.0-c6a0f6?style=for-the-badge">
+  </a>
+</p>
+
+<p align="center">
+  <a href="docs/index.md">Documentation</a> •
+  <a href="docs/quickstart.md">Quickstart</a> •
+  <a href="docs/api.md">API Reference</a> •
+  <a href="docs/examples.md">Examples</a>
+</p>
+
+</div>
+
+---
+
+The Sentinel Agent Elixir SDK provides a simple, behaviour-based API for building agents that integrate with the [Sentinel](https://github.com/raskell-io/sentinel) reverse proxy. Agents can inspect requests and responses, block malicious traffic, add headers, and attach audit metadata—all from Elixir.
+
+## Quick Start
+
+Add `sentinel_agent_sdk` to your dependencies in `mix.exs`:
 
 ```elixir
 def deps do
@@ -14,26 +46,13 @@ def deps do
 end
 ```
 
-Or install from source:
-
-```bash
-cd sentinel-agent-elixir-sdk
-
-# Using mise (recommended)
-mise install
-mix deps.get
-
-# Run tests
-mix test
-```
-
-## Quick Start
-
-Create a simple agent that blocks requests to admin paths:
+Create `my_agent.ex`:
 
 ```elixir
 defmodule MyAgent do
   use SentinelAgentSdk.Agent
+
+  alias SentinelAgentSdk.{Decision, Request}
 
   @impl true
   def name, do: "my-agent"
@@ -41,8 +60,7 @@ defmodule MyAgent do
   @impl true
   def on_request(request) do
     if Request.path_starts_with?(request, "/admin") do
-      Decision.deny()
-      |> Decision.with_body("Access denied")
+      Decision.deny() |> Decision.with_body("Access denied")
     else
       Decision.allow()
     end
@@ -53,60 +71,99 @@ end
 SentinelAgentSdk.run(MyAgent, socket: "/tmp/my-agent.sock")
 ```
 
+Run the agent:
+
+```bash
+mix run --no-halt -e 'SentinelAgentSdk.run(MyAgent, socket: "/tmp/my-agent.sock")'
+```
+
 ## Features
 
-- **Simple API**: Implement the `Agent` behaviour with intuitive callback functions
-- **Fluent Decision Builder**: Pipe operators to build complex responses
-- **Request/Response Wrappers**: Ergonomic access to headers, body, and metadata
-- **Typed Configuration**: Use `ConfigurableAgent` for structured configuration
-- **Protocol Compatible**: Full compatibility with Sentinel's agent protocol
+| Feature | Description |
+|---------|-------------|
+| **Simple Agent API** | Implement `on_request`, `on_response`, and other hooks via behaviours |
+| **Fluent Decision Builder** | Pipe operators: `Decision.deny() \|> Decision.with_body(...) \|> Decision.with_tag(...)` |
+| **Request/Response Wrappers** | Ergonomic access to headers, body, query params, metadata |
+| **Typed Configuration** | `ConfigurableAgent` behaviour with struct-based config support |
+| **OTP Native** | Built on OTP for reliable, concurrent processing |
+| **Protocol Compatible** | Full compatibility with Sentinel agent protocol v1 |
+
+## Why Agents?
+
+Sentinel's agent system moves complex logic **out of the proxy core** and into isolated, testable, independently deployable processes:
+
+- **Security isolation** — WAF engines, auth validation, and custom logic run in separate processes
+- **Language flexibility** — Write agents in Elixir, Python, Rust, Go, or any language
+- **Independent deployment** — Update agent logic without restarting the proxy
+- **Failure boundaries** — Agent crashes don't take down the dataplane
+
+Agents communicate with Sentinel over Unix sockets using a simple length-prefixed JSON protocol.
+
+## Architecture
+
+```
+┌─────────────┐         ┌──────────────┐         ┌──────────────┐
+│   Client    │────────▶│   Sentinel   │────────▶│   Upstream   │
+└─────────────┘         └──────────────┘         └──────────────┘
+                               │
+                               │ Unix Socket (JSON)
+                               ▼
+                        ┌──────────────┐
+                        │    Agent     │
+                        │   (Elixir)   │
+                        └──────────────┘
+```
+
+1. Client sends request to Sentinel
+2. Sentinel forwards request headers to agent
+3. Agent returns decision (allow, block, redirect) with optional header mutations
+4. Sentinel applies the decision
+5. Agent can also inspect response headers before they reach the client
+
+---
 
 ## Core Concepts
 
 ### Agent
 
-The `Agent` behaviour is the main abstraction for building agents. Implement the callbacks you need:
+The `Agent` behaviour defines the hooks you can implement:
 
 ```elixir
 defmodule MyAgent do
   use SentinelAgentSdk.Agent
 
+  alias SentinelAgentSdk.{Decision, Request, Response}
+
   @impl true
   def name, do: "my-agent"
 
   @impl true
-  def on_configure(config) do
-    # Optional: Handle configuration from proxy
-    :ok
-  end
-
-  @impl true
   def on_request(request) do
-    # Optional: Process request headers
+    # Called when request headers arrive
     Decision.allow()
   end
 
   @impl true
   def on_request_body(request) do
-    # Optional: Process request body (when enabled)
+    # Called when request body is available (if body inspection enabled)
     Decision.allow()
   end
 
   @impl true
   def on_response(request, response) do
-    # Optional: Process response headers
+    # Called when response headers arrive from upstream
     Decision.allow()
   end
 
   @impl true
   def on_response_body(request, response) do
-    # Optional: Process response body (when enabled)
+    # Called when response body is available (if body inspection enabled)
     Decision.allow()
   end
 
   @impl true
   def on_request_complete(request, status, duration_ms) do
-    # Optional: Called when request processing completes
+    # Called when request processing completes. Use for logging/metrics.
     :ok
   end
 end
@@ -114,45 +171,38 @@ end
 
 ### Request
 
-The `Request` module provides ergonomic access to HTTP request data:
+Access HTTP request data with convenience functions:
 
 ```elixir
 def on_request(request) do
   alias SentinelAgentSdk.Request
 
-  # Method checks
-  if Request.is_get?(request), do: # ...
-  if Request.is_post?(request), do: # ...
-
-  # Path access
-  path = Request.path(request)           # Full path with query string
-  path_only = Request.path_only(request) # Path without query string
-
   # Path matching
-  if Request.path_starts_with?(request, "/api"), do: # ...
-  if Request.path_equals?(request, "/health"), do: # ...
-
-  # Query parameters
-  page = Request.query(request, "page")           # Single value
-  tags = Request.query_all(request, "tag")        # All values
+  if Request.path_starts_with?(request, "/api/"), do: # ...
+  if Request.path_equals?(request, "/health"), do: Decision.allow()
 
   # Headers (case-insensitive)
-  auth = Request.header(request, "Authorization")
-  has_auth = Request.has_header?(request, "Authorization")
+  auth = Request.header(request, "authorization")
+  unless Request.has_header?(request, "x-api-key") do
+    Decision.unauthorized()
+  end
 
-  # Common headers
+  # Common headers as functions
   host = Request.host(request)
   user_agent = Request.user_agent(request)
   content_type = Request.content_type(request)
 
-  # Body access
-  body_bytes = Request.body(request)
-  body_str = Request.body_str(request)
-  body_json = Request.body_json(request)
+  # Query parameters
+  page = Request.query(request, "page") || "1"
 
-  # Metadata
+  # Request metadata
   client_ip = Request.client_ip(request)
   correlation_id = Request.correlation_id(request)
+
+  # Body (when body inspection is enabled)
+  if Request.body(request) != <<>> do
+    data = Request.body_str(request)
+  end
 
   Decision.allow()
 end
@@ -160,109 +210,99 @@ end
 
 ### Response
 
-The `Response` module provides similar access for HTTP responses:
+Inspect upstream responses before they reach the client:
 
 ```elixir
 def on_response(request, response) do
   alias SentinelAgentSdk.Response
 
-  # Status checks
-  status = Response.status_code(response)
-  if Response.is_success?(response), do: # ...      # 2xx
-  if Response.is_redirect?(response), do: # ...     # 3xx
-  if Response.is_client_error?(response), do: # ... # 4xx
-  if Response.is_server_error?(response), do: # ... # 5xx
-  if Response.is_error?(response), do: # ...        # 4xx or 5xx
+  # Status code
+  if Response.status_code(response) >= 500 do
+    Decision.allow() |> Decision.with_tag("upstream-error")
+  end
 
   # Headers
-  content_type = Response.content_type(response)
-  location = Response.location(response)  # For redirects
+  content_type = Response.header(response, "content-type")
 
-  # Content type checks
-  if Response.is_json?(response), do: # ...
-  if Response.is_html?(response), do: # ...
-
-  # Body
-  body_bytes = Response.body(response)
-  body_str = Response.body_str(response)
-  body_json = Response.body_json(response)
-
+  # Add security headers to all responses
   Decision.allow()
+  |> Decision.add_response_header("X-Frame-Options", "DENY")
+  |> Decision.add_response_header("X-Content-Type-Options", "nosniff")
+  |> Decision.remove_response_header("Server")
 end
 ```
 
 ### Decision
 
-The `Decision` module provides a fluent API for building agent responses:
+Build responses with a fluent API using the pipe operator:
 
 ```elixir
 alias SentinelAgentSdk.Decision
 
-# Basic decisions
-Decision.allow()                    # Pass through
-Decision.deny()                     # Block with 403
-Decision.unauthorized()             # Block with 401
-Decision.rate_limited()             # Block with 429
-Decision.block(500)                 # Block with custom status
-Decision.redirect("/login")         # Redirect (302)
-Decision.redirect_permanent("/new") # Redirect (301)
-
-# Customizing block responses
-Decision.deny()
-|> Decision.with_body("Access denied")
-|> Decision.with_block_header("X-Blocked-Reason", "policy")
-
-# JSON responses
-Decision.block(400)
-|> Decision.with_json_body(%{"error" => "Invalid request"})
-
-# Header mutations
+# Allow the request
 Decision.allow()
-|> Decision.add_request_header("X-Processed", "true")
-|> Decision.remove_request_header("X-Internal")
-|> Decision.add_response_header("X-Cache", "HIT")
-|> Decision.remove_response_header("Server")
 
-# Audit metadata
+# Block with common status codes
+Decision.deny()           # 403 Forbidden
+Decision.unauthorized()   # 401 Unauthorized
+Decision.rate_limited()   # 429 Too Many Requests
+Decision.block(503)       # Custom status
+
+# Block with response body
+Decision.deny() |> Decision.with_body("Access denied")
+Decision.block(400) |> Decision.with_json_body(%{"error" => "Invalid request"})
+
+# Redirect
+Decision.redirect("/login")                    # 302 temporary
+Decision.redirect("/new-path", 301)            # 301 permanent
+Decision.redirect_permanent("/new-path")       # 301 permanent
+
+# Modify headers
+Decision.allow()
+|> Decision.add_request_header("X-User-ID", user_id)
+|> Decision.remove_request_header("Cookie")
+|> Decision.add_response_header("X-Cache", "HIT")
+|> Decision.remove_response_header("X-Powered-By")
+
+# Audit metadata (appears in Sentinel logs)
 Decision.deny()
-|> Decision.with_tag("security")
-|> Decision.with_tags(["blocked", "suspicious"])
-|> Decision.with_rule_id("RULE_001")
+|> Decision.with_tag("blocked")
+|> Decision.with_rule_id("SQLI-001")
 |> Decision.with_confidence(0.95)
-|> Decision.with_reason_code("RATE_EXCEEDED")
-|> Decision.with_metadata("client_ip", "1.2.3.4")
+|> Decision.with_metadata("matched_pattern", pattern)
 ```
 
-### Configurable Agent
+### ConfigurableAgent
 
-For agents that need typed configuration:
+For agents with typed configuration:
 
 ```elixir
-defmodule MyConfig do
-  defstruct rate_limit: 100, enabled: true, blocked_paths: []
+defmodule RateLimitConfig do
+  defstruct requests_per_minute: 60, enabled: true
 end
 
-defmodule MyAgent do
+defmodule RateLimitAgent do
   use SentinelAgentSdk.ConfigurableAgent
 
-  @impl true
-  def name, do: "my-agent"
+  alias SentinelAgentSdk.{Decision, Request}
 
   @impl true
-  def default_config, do: %MyConfig{}
+  def name, do: "rate-limiter"
+
+  @impl true
+  def default_config, do: %RateLimitConfig{}
 
   @impl true
   def parse_config(config_map) do
-    %MyConfig{
-      rate_limit: Map.get(config_map, "rate_limit", 100),
-      enabled: Map.get(config_map, "enabled", true),
-      blocked_paths: Map.get(config_map, "blocked_paths", [])
+    %RateLimitConfig{
+      requests_per_minute: Map.get(config_map, "requests_per_minute", 60),
+      enabled: Map.get(config_map, "enabled", true)
     }
   end
 
   @impl true
   def on_config_applied(config) do
-    IO.puts("Config applied: rate_limit=#{config.rate_limit}")
+    IO.puts("Rate limit set to #{config.requests_per_minute}/min")
     :ok
   end
 
@@ -271,15 +311,14 @@ defmodule MyAgent do
     if not config.enabled do
       Decision.allow()
     else
-      blocked = Enum.any?(config.blocked_paths, fn path ->
-        Request.path_starts_with?(request, path)
-      end)
-
-      if blocked, do: Decision.deny(), else: Decision.allow()
+      # Use config.requests_per_minute...
+      Decision.allow()
     end
   end
 end
 ```
+
+---
 
 ## Running Agents
 
@@ -297,89 +336,163 @@ SentinelAgentSdk.run(MyAgent,
 )
 ```
 
+| Option | Description | Default |
+|--------|-------------|---------|
+| `:socket` | Unix socket path | `/tmp/sentinel-agent.sock` |
+| `:log_level` | `:debug`, `:info`, `:warning`, `:error` | `:info` |
+| `:json_logs` | Output logs as JSON | `false` |
+
 ### As a Script
 
 ```bash
 # Run example agent
-elixir examples/simple_agent.exs --socket /tmp/my-agent.sock
+elixir examples/simple_agent.exs
 
-# With options
-elixir examples/simple_agent.exs --socket /tmp/my-agent.sock --log-level debug
+# With custom socket
+elixir -e 'SentinelAgentSdk.run(MyAgent, socket: "/tmp/custom.sock")'
 ```
+
+---
 
 ## Sentinel Configuration
 
-Configure Sentinel to use your agent:
+Configure Sentinel to connect to your agent:
 
 ```kdl
 agents {
-    agent "my-agent" {
-        type "custom"
-        transport "unix_socket" {
-            path "/tmp/my-agent.sock"
-        }
-        events ["request_headers", "response_headers"]
-        timeout_ms 1000
-        failure_mode "open"
+    agent "my-agent" type="custom" {
+        unix-socket path="/tmp/my-agent.sock"
+        events "request_headers"
+        timeout-ms 100
+        failure-mode "open"
+    }
+}
 
-        config {
-            rate_limit 100
-            enabled true
-            blocked_paths ["/admin", "/internal"]
-        }
+filters {
+    filter "my-filter" {
+        type "agent"
+        agent "my-agent"
     }
 }
 
 routes {
     route "api" {
-        matches { path_prefix "/api" }
+        matches {
+            path-prefix "/api/"
+        }
         upstream "backend"
-        agents ["my-agent"]
+        filters "my-filter"
     }
 }
 ```
 
+### Configuration Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `unix-socket path="..."` | Path to agent's Unix socket | required |
+| `events` | Events to send: `request_headers`, `request_body`, `response_headers`, `response_body` | `request_headers` |
+| `timeout-ms` | Timeout for agent calls | `1000` |
+| `failure-mode` | `"open"` (allow on failure) or `"closed"` (block on failure) | `"open"` |
+
+See [docs/configuration.md](docs/configuration.md) for complete configuration reference.
+
+---
+
 ## Examples
 
-See the `examples/` directory for complete examples:
+The `examples/` directory contains complete, runnable examples:
 
-- `simple_agent.exs` - Basic request filtering
-- `configurable_agent.exs` - Rate limiting with configuration
-- `body_inspection_agent.exs` - Request/response body inspection
+| Example | Description |
+|---------|-------------|
+| [`simple_agent.exs`](examples/simple_agent.exs) | Basic request blocking and header modification |
+| [`configurable_agent.exs`](examples/configurable_agent.exs) | Rate limiting with typed configuration |
+| [`body_inspection_agent.exs`](examples/body_inspection_agent.exs) | Request and response body inspection |
 
-## Protocol Compatibility
+See [docs/examples.md](docs/examples.md) for more patterns: authentication, rate limiting, IP filtering, header transformation, and more.
 
-This SDK implements Sentinel's agent protocol version 1:
-
-- Unix socket communication with length-prefixed JSON
-- Support for all event types (request headers, body, response headers, body, complete)
-- Full decision types (allow, block, redirect, challenge)
-- Header mutations and audit metadata
+---
 
 ## Development
 
 This project uses [mise](https://mise.jdx.dev/) for tool management.
 
 ```bash
-# Install tools via mise
+# Install tools
 mise install
 
-# Get dependencies
+# Install dependencies
 mix deps.get
 
 # Run tests
 mix test
 
+# Run tests with coverage
+mix test --cover
+
 # Type checking
 mix dialyzer
 
+# Lint
+mix format --check-formatted
+
 # Format code
 mix format
-
-# Lint
-mix lint
 ```
+
+### Without mise
+
+```bash
+# Ensure Elixir 1.17+ and Erlang 27+ are installed
+mix deps.get
+mix test
+```
+
+### Project Structure
+
+```
+sentinel-agent-elixir-sdk/
+├── lib/sentinel_agent_sdk/
+│   ├── agent.ex         # Agent and ConfigurableAgent behaviours
+│   ├── decision.ex      # Decision builder
+│   ├── protocol.ex      # Wire protocol types and encoding
+│   ├── request.ex       # Request wrapper
+│   ├── response.ex      # Response wrapper
+│   └── runner.ex        # Runner and socket handling
+├── test/
+│   ├── sentinel_agent_sdk_test.exs     # Unit tests
+│   ├── protocol_conformance_test.exs   # Protocol compatibility tests
+│   └── integration/                    # Integration tests
+├── examples/                           # Example agents
+└── docs/                               # Documentation
+```
+
+---
+
+## Protocol
+
+This SDK implements Sentinel Agent Protocol v1:
+
+- **Transport**: Unix domain sockets
+- **Encoding**: Length-prefixed JSON (4-byte big-endian length prefix)
+- **Max message size**: 10 MB
+- **Events**: `configure`, `request_headers`, `request_body_chunk`, `response_headers`, `response_body_chunk`, `request_complete`
+- **Decisions**: `allow`, `block`, `redirect`, `challenge`
+
+The protocol is designed for low latency and high throughput, with support for streaming body inspection.
+
+---
+
+## Community
+
+- [Issues](https://github.com/raskell-io/sentinel-agent-elixir-sdk/issues) — Bug reports and feature requests
+- [Sentinel Discussions](https://github.com/raskell-io/sentinel/discussions) — Questions and ideas
+- [Sentinel Documentation](https://sentinel.raskell.io/docs) — Proxy documentation
+
+Contributions welcome. Please open an issue to discuss significant changes before submitting a PR.
+
+---
 
 ## License
 
-Apache License 2.0 - see LICENSE file for details.
+Apache 2.0 — See [LICENSE](LICENSE).
