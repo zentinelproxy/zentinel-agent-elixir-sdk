@@ -1,5 +1,5 @@
 #!/usr/bin/env elixir
-# Simple Sentinel agent example.
+# Simple Zentinel agent example.
 #
 # This example demonstrates a basic agent that:
 # - Blocks requests to /admin paths
@@ -10,7 +10,7 @@
 # Or: mix run examples/simple_agent.exs
 
 Mix.install([
-  {:sentinel_agent_sdk, path: "."}
+  {:zentinel_agent_sdk, path: "."}
 ])
 
 defmodule SimpleAgent do
@@ -18,7 +18,7 @@ defmodule SimpleAgent do
   A simple example agent that blocks admin paths.
   """
 
-  use SentinelAgentSdk.Agent
+  use ZentinelAgentSdk.Agent
 
   @impl true
   def name, do: "simple-agent"
@@ -68,12 +68,12 @@ end
     strict: [socket: :string, log_level: :string, json_logs: :boolean]
   )
 
-socket = Keyword.get(opts, :socket, "/tmp/sentinel-agent.sock")
+socket = Keyword.get(opts, :socket, "/tmp/zentinel-agent.sock")
 log_level = Keyword.get(opts, :log_level, "info") |> String.to_atom()
 json_logs = Keyword.get(opts, :json_logs, false)
 
 # Run the agent
-SentinelAgentSdk.run(SimpleAgent,
+ZentinelAgentSdk.run(SimpleAgent,
   socket: socket,
   log_level: log_level,
   json_logs: json_logs

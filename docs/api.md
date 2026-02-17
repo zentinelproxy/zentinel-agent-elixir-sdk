@@ -2,10 +2,10 @@
 
 ## Agent
 
-The behaviour for all Sentinel agents.
+The behaviour for all Zentinel agents.
 
 ```elixir
-use SentinelAgentSdk.Agent
+use ZentinelAgentSdk.Agent
 ```
 
 ### Required Callbacks
@@ -46,7 +46,7 @@ Called when request headers are received. This is the main entry point for reque
 @callback on_request_body(request :: Request.t()) :: Decision.t()
 ```
 
-Called when the request body is available (requires body inspection to be enabled in Sentinel).
+Called when the request body is available (requires body inspection to be enabled in Zentinel).
 
 **Default**: Returns `Decision.allow()`
 
@@ -87,7 +87,7 @@ Called when request processing is complete. Use for logging or metrics.
 A behaviour for agents with typed configuration support.
 
 ```elixir
-use SentinelAgentSdk.ConfigurableAgent
+use ZentinelAgentSdk.ConfigurableAgent
 ```
 
 ### Additional Callbacks
@@ -124,7 +124,7 @@ defmodule MyConfig do
 end
 
 defmodule MyAgent do
-  use SentinelAgentSdk.ConfigurableAgent
+  use ZentinelAgentSdk.ConfigurableAgent
 
   @impl true
   def name, do: "my-agent"
@@ -159,7 +159,7 @@ end
 Fluent builder for agent decisions.
 
 ```elixir
-alias SentinelAgentSdk.Decision
+alias ZentinelAgentSdk.Decision
 ```
 
 ### Factory Functions
@@ -381,7 +381,7 @@ Decision.allow() |> Decision.with_response_body_mutation("modified body", 0)
 Represents an incoming HTTP request.
 
 ```elixir
-alias SentinelAgentSdk.Request
+alias ZentinelAgentSdk.Request
 ```
 
 ### Path and URI
@@ -549,7 +549,7 @@ Request.is_multipart?(request)
 Represents an HTTP response from the upstream.
 
 ```elixir
-alias SentinelAgentSdk.Response
+alias ZentinelAgentSdk.Response
 ```
 
 ### Status
@@ -624,14 +624,14 @@ Response.body_json(response)  # Parsed JSON
 
 ## Runner
 
-The `SentinelAgentSdk` module provides the runner functions.
+The `ZentinelAgentSdk` module provides the runner functions.
 
-### `SentinelAgentSdk.run/2`
+### `ZentinelAgentSdk.run/2`
 
 Run an agent with options.
 
 ```elixir
-SentinelAgentSdk.run(MyAgent,
+ZentinelAgentSdk.run(MyAgent,
   socket: "/tmp/my-agent.sock",
   log_level: :debug,
   json_logs: true
@@ -642,6 +642,6 @@ SentinelAgentSdk.run(MyAgent,
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `:socket` | Unix socket path | `/tmp/sentinel-agent.sock` |
+| `:socket` | Unix socket path | `/tmp/zentinel-agent.sock` |
 | `:log_level` | Log level | `:info` |
 | `:json_logs` | Enable JSON logs | `false` |

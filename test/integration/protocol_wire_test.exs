@@ -8,13 +8,13 @@ defmodule Integration.ProtocolWireTest do
 
   use ExUnit.Case
 
-  alias SentinelAgentSdk.{Decision, Request}
-  alias SentinelAgentSdk.Protocol
-  alias SentinelAgentSdk.Runner.Handler
+  alias ZentinelAgentSdk.{Decision, Request}
+  alias ZentinelAgentSdk.Protocol
+  alias ZentinelAgentSdk.Runner.Handler
 
   # Simple test agent module
   defmodule SimpleTestAgent do
-    use SentinelAgentSdk.Agent
+    use ZentinelAgentSdk.Agent
 
     @impl true
     def name, do: "test-agent"
@@ -34,7 +34,7 @@ defmodule Integration.ProtocolWireTest do
   end
 
   defp create_handler do
-    config = %SentinelAgentSdk.Runner.Config{
+    config = %ZentinelAgentSdk.Runner.Config{
       socket_path: "/tmp/test.sock",
       name: "test-agent",
       json_logs: false,
@@ -48,7 +48,7 @@ defmodule Integration.ProtocolWireTest do
     test "request headers event handling" do
       handler = create_handler()
 
-      # Simulate what Sentinel sends
+      # Simulate what Zentinel sends
       request_event = %{
         "version" => Protocol.protocol_version(),
         "event_type" => "request_headers",

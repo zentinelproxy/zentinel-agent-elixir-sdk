@@ -1,9 +1,9 @@
-defmodule SentinelAgentSdkTest do
+defmodule ZentinelAgentSdkTest do
   use ExUnit.Case
-  doctest SentinelAgentSdk
+  doctest ZentinelAgentSdk
 
-  alias SentinelAgentSdk.{Decision, Request, Response}
-  alias SentinelAgentSdk.Protocol.{RequestHeadersEvent, RequestMetadata, ResponseHeadersEvent}
+  alias ZentinelAgentSdk.{Decision, Request, Response}
+  alias ZentinelAgentSdk.Protocol.{RequestHeadersEvent, RequestMetadata, ResponseHeadersEvent}
 
   describe "Decision" do
     test "allow returns allow decision" do
@@ -350,7 +350,7 @@ defmodule SentinelAgentSdkTest do
   end
 
   describe "Protocol" do
-    alias SentinelAgentSdk.Protocol
+    alias ZentinelAgentSdk.Protocol
 
     test "encode_message creates length-prefixed message" do
       {:ok, encoded} = Protocol.encode_message(%{"test" => "value"})

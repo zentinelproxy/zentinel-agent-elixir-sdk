@@ -12,7 +12,7 @@
 # Or: mix run examples/v2_waf_agent.exs
 
 Mix.install([
-  {:sentinel_agent_sdk, path: "."}
+  {:zentinel_agent_sdk, path: "."}
 ])
 
 defmodule WafConfig do
@@ -33,7 +33,7 @@ defmodule WafAgentV2 do
   A V2 WAF agent with body inspection and metrics.
   """
 
-  use SentinelAgentSdk.V2.ConfigurableAgent
+  use ZentinelAgentSdk.V2.ConfigurableAgent
 
   # Track metrics
   @blocked_count :persistent_term.get({__MODULE__, :blocked_count}, 0)
@@ -325,14 +325,14 @@ transport =
     other -> raise "Unknown transport: #{other}"
   end
 
-socket = Keyword.get(opts, :socket, "/tmp/sentinel-waf-v2.sock")
+socket = Keyword.get(opts, :socket, "/tmp/zentinel-waf-v2.sock")
 log_level = Keyword.get(opts, :log_level, "info") |> String.to_atom()
 json_logs = Keyword.get(opts, :json_logs, false)
 proxy_url = Keyword.get(opts, :proxy_url)
 auth_token = Keyword.get(opts, :auth_token)
 
 # Run the agent
-SentinelAgentSdk.V2.run(WafAgentV2,
+ZentinelAgentSdk.V2.run(WafAgentV2,
   transport: transport,
   socket: socket,
   proxy_url: proxy_url,

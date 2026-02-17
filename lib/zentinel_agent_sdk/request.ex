@@ -1,4 +1,4 @@
-defmodule SentinelAgentSdk.Request do
+defmodule ZentinelAgentSdk.Request do
   @moduledoc """
   Ergonomic wrapper around HTTP request data.
 
@@ -19,7 +19,7 @@ defmodule SentinelAgentSdk.Request do
       end
   """
 
-  alias SentinelAgentSdk.Protocol.{RequestHeadersEvent, RequestMetadata}
+  alias ZentinelAgentSdk.Protocol.{RequestHeadersEvent, RequestMetadata}
 
   @type t :: %__MODULE__{
           event: RequestHeadersEvent.t(),
@@ -284,7 +284,7 @@ defmodule SentinelAgentSdk.Request do
   end
 
   defimpl Inspect do
-    def inspect(%SentinelAgentSdk.Request{event: event}, _opts) do
+    def inspect(%ZentinelAgentSdk.Request{event: event}, _opts) do
       "#Request<#{event.method} #{event.uri}>"
     end
   end

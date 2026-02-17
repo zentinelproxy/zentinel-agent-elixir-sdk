@@ -1,21 +1,21 @@
-defmodule SentinelAgentSdk.Agent do
+defmodule ZentinelAgentSdk.Agent do
   @moduledoc """
-  Behaviour for Sentinel agents.
+  Behaviour for Zentinel agents.
 
   Implement this behaviour to create a custom agent that can process
-  HTTP requests and responses in the Sentinel proxy pipeline.
+  HTTP requests and responses in the Zentinel proxy pipeline.
 
   ## Example
 
       defmodule MyAgent do
-        use SentinelAgentSdk.Agent
+        use ZentinelAgentSdk.Agent
 
         @impl true
         def name, do: "my-agent"
 
         @impl true
         def on_request(request) do
-          alias SentinelAgentSdk.{Decision, Request}
+          alias ZentinelAgentSdk.{Decision, Request}
 
           if Request.path_starts_with?(request, "/blocked") do
             Decision.deny() |> Decision.with_body("Blocked")
@@ -40,8 +40,8 @@ defmodule SentinelAgentSdk.Agent do
   - `on_guardrail_inspect/1` - Called for guardrail content inspection.
   """
 
-  alias SentinelAgentSdk.{Decision, Request, Response}
-  alias SentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
+  alias ZentinelAgentSdk.{Decision, Request, Response}
+  alias ZentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
 
   @doc """
   Return the agent name for logging and identification.
@@ -119,10 +119,10 @@ defmodule SentinelAgentSdk.Agent do
 
   defmacro __using__(_opts) do
     quote do
-      @behaviour SentinelAgentSdk.Agent
+      @behaviour ZentinelAgentSdk.Agent
 
-      alias SentinelAgentSdk.{Decision, Request, Response}
-      alias SentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
+      alias ZentinelAgentSdk.{Decision, Request, Response}
+      alias ZentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
 
       @impl true
       def on_configure(_config), do: :ok
@@ -156,7 +156,7 @@ defmodule SentinelAgentSdk.Agent do
   end
 end
 
-defmodule SentinelAgentSdk.ConfigurableAgent do
+defmodule ZentinelAgentSdk.ConfigurableAgent do
   @moduledoc """
   Behaviour for agents with typed configuration support.
 
@@ -171,7 +171,7 @@ defmodule SentinelAgentSdk.ConfigurableAgent do
       end
 
       defmodule MyAgent do
-        use SentinelAgentSdk.ConfigurableAgent
+        use ZentinelAgentSdk.ConfigurableAgent
 
         @impl true
         def name, do: "my-agent"
@@ -205,8 +205,8 @@ defmodule SentinelAgentSdk.ConfigurableAgent do
   to configuration.
   """
 
-  alias SentinelAgentSdk.{Decision, Request, Response}
-  alias SentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
+  alias ZentinelAgentSdk.{Decision, Request, Response}
+  alias ZentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
 
   @doc """
   Return the agent name for logging and identification.
@@ -286,10 +286,10 @@ defmodule SentinelAgentSdk.ConfigurableAgent do
 
   defmacro __using__(_opts) do
     quote do
-      @behaviour SentinelAgentSdk.ConfigurableAgent
+      @behaviour ZentinelAgentSdk.ConfigurableAgent
 
-      alias SentinelAgentSdk.{Decision, Request, Response}
-      alias SentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
+      alias ZentinelAgentSdk.{Decision, Request, Response}
+      alias ZentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
 
       @impl true
       def on_config_applied(_config), do: :ok

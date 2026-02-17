@@ -1,4 +1,4 @@
-defmodule SentinelAgentSdk.V2.Handler do
+defmodule ZentinelAgentSdk.V2.Handler do
   @moduledoc """
   GenServer that bridges V2 agents to the protocol layer.
 
@@ -11,16 +11,16 @@ defmodule SentinelAgentSdk.V2.Handler do
   - Request cancellation
 
   This handler is used internally by the V2 runner and should not
-  be used directly. Use `SentinelAgentSdk.V2.Runner` instead.
+  be used directly. Use `ZentinelAgentSdk.V2.Runner` instead.
   """
 
   use GenServer
 
   require Logger
 
-  alias SentinelAgentSdk.{Decision, Request, Response}
+  alias ZentinelAgentSdk.{Decision, Request, Response}
 
-  alias SentinelAgentSdk.V2.Types.{
+  alias ZentinelAgentSdk.V2.Types.{
     AgentCapabilities,
     CancelRequest,
     DrainRequest,
@@ -30,7 +30,7 @@ defmodule SentinelAgentSdk.V2.Handler do
     MetricsReport
   }
 
-  alias SentinelAgentSdk.Protocol.{
+  alias ZentinelAgentSdk.Protocol.{
     ConfigureEvent,
     GuardrailInspectEvent,
     GuardrailResponse,

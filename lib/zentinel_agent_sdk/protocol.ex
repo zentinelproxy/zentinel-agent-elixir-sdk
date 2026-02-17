@@ -1,9 +1,9 @@
-defmodule SentinelAgentSdk.Protocol do
+defmodule ZentinelAgentSdk.Protocol do
   @moduledoc """
-  Protocol definitions for Sentinel agent communication.
+  Protocol definitions for Zentinel agent communication.
 
   This module defines the wire format and message types for communication
-  between the Sentinel proxy and agents over Unix sockets.
+  between the Zentinel proxy and agents over Unix sockets.
   """
 
   @protocol_version 1
@@ -317,7 +317,7 @@ defmodule SentinelAgentSdk.Protocol do
   defmodule GuardrailDetection do
     @moduledoc "A single guardrail detection result."
 
-    alias SentinelAgentSdk.Protocol.TextSpan
+    alias ZentinelAgentSdk.Protocol.TextSpan
 
     @type t :: %__MODULE__{
             category: String.t(),
@@ -420,7 +420,7 @@ defmodule SentinelAgentSdk.Protocol do
   defmodule GuardrailResponse do
     @moduledoc "Response from guardrail inspection."
 
-    alias SentinelAgentSdk.Protocol.GuardrailDetection
+    alias ZentinelAgentSdk.Protocol.GuardrailDetection
 
     @type t :: %__MODULE__{
             detected: boolean(),
@@ -561,7 +561,7 @@ defmodule SentinelAgentSdk.Protocol do
   defmodule AgentResponse do
     @moduledoc "Response from agent to proxy."
 
-    alias SentinelAgentSdk.Protocol.{HeaderOp, AuditMetadata}
+    alias ZentinelAgentSdk.Protocol.{HeaderOp, AuditMetadata}
 
     @type t :: %__MODULE__{
             version: integer(),

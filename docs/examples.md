@@ -1,6 +1,6 @@
 # Examples
 
-Common patterns and use cases for Sentinel agents.
+Common patterns and use cases for Zentinel agents.
 
 ## Basic Request Blocking
 
@@ -10,9 +10,9 @@ Block requests based on path patterns:
 defmodule BlockingAgent do
   @moduledoc "Block specific paths."
 
-  use SentinelAgentSdk.Agent
+  use ZentinelAgentSdk.Agent
 
-  alias SentinelAgentSdk.{Decision, Request}
+  alias ZentinelAgentSdk.{Decision, Request}
 
   @blocked_paths ["/admin", "/internal", "/.git", "/.env"]
 
@@ -46,9 +46,9 @@ Block or allow requests based on client IP:
 defmodule IPFilterAgent do
   @moduledoc "Allow only specific IPs."
 
-  use SentinelAgentSdk.Agent
+  use ZentinelAgentSdk.Agent
 
-  alias SentinelAgentSdk.{Decision, Request}
+  alias ZentinelAgentSdk.{Decision, Request}
 
   @allowed_ips MapSet.new(["10.0.0.1", "192.168.1.1", "127.0.0.1"])
 
@@ -78,9 +78,9 @@ Validate JWT tokens:
 defmodule AuthAgent do
   @moduledoc "Validate JWT authentication."
 
-  use SentinelAgentSdk.Agent
+  use ZentinelAgentSdk.Agent
 
-  alias SentinelAgentSdk.{Decision, Request}
+  alias ZentinelAgentSdk.{Decision, Request}
 
   @impl true
   def name, do: "auth-agent"
@@ -147,9 +147,9 @@ Simple in-memory rate limiting using ETS:
 defmodule RateLimitAgent do
   @moduledoc "Simple rate limiting agent."
 
-  use SentinelAgentSdk.Agent
+  use ZentinelAgentSdk.Agent
 
-  alias SentinelAgentSdk.{Decision, Request}
+  alias ZentinelAgentSdk.{Decision, Request}
 
   @max_requests 100
   @window_seconds 60
@@ -218,9 +218,9 @@ Add, remove, or modify headers:
 defmodule HeaderAgent do
   @moduledoc "Modify request and response headers."
 
-  use SentinelAgentSdk.Agent
+  use ZentinelAgentSdk.Agent
 
-  alias SentinelAgentSdk.{Decision, Request, Response}
+  alias ZentinelAgentSdk.{Decision, Request, Response}
 
   @impl true
   def name, do: "header-agent"
@@ -229,7 +229,7 @@ defmodule HeaderAgent do
   def on_request(request) do
     Decision.allow()
     # Add headers for upstream
-    |> Decision.add_request_header("X-Forwarded-By", "sentinel")
+    |> Decision.add_request_header("X-Forwarded-By", "zentinel")
     |> Decision.add_request_header("X-Request-ID", Request.correlation_id(request))
     # Remove sensitive headers
     |> Decision.remove_request_header("X-Internal-Token")
@@ -261,10 +261,10 @@ end
 defmodule ConfigurableBlocker do
   @moduledoc "Agent with runtime configuration."
 
-  use SentinelAgentSdk.ConfigurableAgent
+  use ZentinelAgentSdk.ConfigurableAgent
 
   alias ConfigurableBlocker.Config
-  alias SentinelAgentSdk.{Decision, Request}
+  alias ZentinelAgentSdk.{Decision, Request}
 
   @impl true
   def name, do: "configurable-blocker"
@@ -316,9 +316,9 @@ Log all requests with timing:
 defmodule LoggingAgent do
   @moduledoc "Log all requests."
 
-  use SentinelAgentSdk.Agent
+  use ZentinelAgentSdk.Agent
 
-  alias SentinelAgentSdk.{Decision, Request}
+  alias ZentinelAgentSdk.{Decision, Request}
 
   require Logger
 
@@ -354,9 +354,9 @@ Validate request content types:
 defmodule ContentTypeAgent do
   @moduledoc "Validate content types for POST/PUT requests."
 
-  use SentinelAgentSdk.Agent
+  use ZentinelAgentSdk.Agent
 
-  alias SentinelAgentSdk.{Decision, Request}
+  alias ZentinelAgentSdk.{Decision, Request}
 
   @allowed_types MapSet.new([
     "application/json",
@@ -409,9 +409,9 @@ Redirect requests to different URLs:
 defmodule RedirectAgent do
   @moduledoc "Redirect old paths to new locations."
 
-  use SentinelAgentSdk.Agent
+  use ZentinelAgentSdk.Agent
 
-  alias SentinelAgentSdk.{Decision, Request}
+  alias ZentinelAgentSdk.{Decision, Request}
 
   @redirects %{
     "/old-path" => "/new-path",
@@ -459,9 +459,9 @@ Agent that performs multiple validations:
 defmodule SecurityAgent do
   @moduledoc "Comprehensive security checks."
 
-  use SentinelAgentSdk.Agent
+  use ZentinelAgentSdk.Agent
 
-  alias SentinelAgentSdk.{Decision, Request}
+  alias ZentinelAgentSdk.{Decision, Request}
 
   @suspicious_patterns ["/..", "/etc/", "/proc/", ".php"]
 

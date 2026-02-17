@@ -1,16 +1,16 @@
-defmodule SentinelAgentSdk.MixProject do
+defmodule ZentinelAgentSdk.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :sentinel_agent_sdk,
+      app: :zentinel_agent_sdk,
       version: "0.2.0",
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       elixirc_paths: elixirc_paths(Mix.env()),
-      name: "Sentinel Agent SDK",
-      description: "Elixir SDK for building Sentinel proxy agents",
+      name: "Zentinel Agent SDK",
+      description: "Elixir SDK for building Zentinel proxy agents",
       package: package(),
       docs: docs(),
       aliases: aliases()
@@ -37,7 +37,7 @@ defmodule SentinelAgentSdk.MixProject do
   defp package do
     [
       licenses: ["Apache-2.0"],
-      links: %{"GitHub" => "https://github.com/raskell-io/sentinel-agent-elixir-sdk"}
+      links: %{"GitHub" => "https://github.com/zentinelproxy/zentinel-agent-elixir-sdk"}
     ]
   end
 

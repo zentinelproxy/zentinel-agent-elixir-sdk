@@ -1,9 +1,9 @@
-defmodule SentinelAgentSdk do
+defmodule ZentinelAgentSdk do
   @moduledoc """
-  Elixir SDK for building Sentinel proxy agents.
+  Elixir SDK for building Zentinel proxy agents.
 
   This SDK provides the tools to build custom agents that integrate with the
-  Sentinel proxy. Agents can inspect and modify HTTP requests and responses,
+  Zentinel proxy. Agents can inspect and modify HTTP requests and responses,
   implement security policies, rate limiting, and more.
 
   ## Protocol Versions
@@ -16,7 +16,7 @@ defmodule SentinelAgentSdk do
   ## Quick Start (v1)
 
       defmodule MyAgent do
-        use SentinelAgentSdk.Agent
+        use ZentinelAgentSdk.Agent
 
         @impl true
         def name, do: "my-agent"
@@ -33,12 +33,12 @@ defmodule SentinelAgentSdk do
       end
 
       # Run the agent
-      SentinelAgentSdk.run(MyAgent)
+      ZentinelAgentSdk.run(MyAgent)
 
   ## Quick Start (v2)
 
       defmodule MyAgentV2 do
-        use SentinelAgentSdk.V2.Agent
+        use ZentinelAgentSdk.V2.Agent
 
         @impl true
         def name, do: "my-agent-v2"
@@ -63,41 +63,41 @@ defmodule SentinelAgentSdk do
       end
 
       # Run with v2 protocol
-      SentinelAgentSdk.V2.run(MyAgentV2)
+      ZentinelAgentSdk.V2.run(MyAgentV2)
 
   ## Core Modules (v1)
 
-  - `SentinelAgentSdk.Agent` - The behaviour for implementing agents
-  - `SentinelAgentSdk.ConfigurableAgent` - For agents with typed configuration
-  - `SentinelAgentSdk.Request` - Request wrapper with helper functions
-  - `SentinelAgentSdk.Response` - Response wrapper with helper functions
-  - `SentinelAgentSdk.Decision` - Fluent API for building agent responses
-  - `SentinelAgentSdk.Runner` - Agent server and runner
+  - `ZentinelAgentSdk.Agent` - The behaviour for implementing agents
+  - `ZentinelAgentSdk.ConfigurableAgent` - For agents with typed configuration
+  - `ZentinelAgentSdk.Request` - Request wrapper with helper functions
+  - `ZentinelAgentSdk.Response` - Response wrapper with helper functions
+  - `ZentinelAgentSdk.Decision` - Fluent API for building agent responses
+  - `ZentinelAgentSdk.Runner` - Agent server and runner
 
   ## V2 Modules
 
-  - `SentinelAgentSdk.V2` - V2 protocol entry point
-  - `SentinelAgentSdk.V2.Agent` - V2 agent behaviour with capabilities
-  - `SentinelAgentSdk.V2.ConfigurableAgent` - V2 agent with typed config
-  - `SentinelAgentSdk.V2.Types` - V2 protocol types (capabilities, health, metrics)
-  - `SentinelAgentSdk.V2.Handler` - V2 event handler
-  - `SentinelAgentSdk.V2.Runner` - V2 runner with transport support
+  - `ZentinelAgentSdk.V2` - V2 protocol entry point
+  - `ZentinelAgentSdk.V2.Agent` - V2 agent behaviour with capabilities
+  - `ZentinelAgentSdk.V2.ConfigurableAgent` - V2 agent with typed config
+  - `ZentinelAgentSdk.V2.Types` - V2 protocol types (capabilities, health, metrics)
+  - `ZentinelAgentSdk.V2.Handler` - V2 event handler
+  - `ZentinelAgentSdk.V2.Runner` - V2 runner with transport support
   """
 
-  alias SentinelAgentSdk.Runner
+  alias ZentinelAgentSdk.Runner
 
   @doc """
   Run an agent with default options.
 
   ## Options
 
-  - `:socket` - Unix socket path (default: "/tmp/sentinel-agent.sock")
+  - `:socket` - Unix socket path (default: "/tmp/zentinel-agent.sock")
   - `:log_level` - Log level (:debug, :info, :warning, :error)
   - `:json_logs` - Enable JSON log format (default: false)
 
   ## Example
 
-      SentinelAgentSdk.run(MyAgent, socket: "/var/run/my-agent.sock")
+      ZentinelAgentSdk.run(MyAgent, socket: "/var/run/my-agent.sock")
   """
   @spec run(module(), keyword()) :: :ok | {:error, term()}
   def run(agent_module, opts \\ []) do

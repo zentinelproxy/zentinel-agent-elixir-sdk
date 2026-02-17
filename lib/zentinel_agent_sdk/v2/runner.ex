@@ -1,4 +1,4 @@
-defmodule SentinelAgentSdk.V2.Runner do
+defmodule ZentinelAgentSdk.V2.Runner do
   @moduledoc """
   V2 runner for starting and managing agents with enhanced protocol support.
 
@@ -9,15 +9,15 @@ defmodule SentinelAgentSdk.V2.Runner do
 
   ## Example - UDS Transport
 
-      SentinelAgentSdk.V2.Runner.run(MyAgent,
+      ZentinelAgentSdk.V2.Runner.run(MyAgent,
         transport: :uds,
-        socket: "/var/run/sentinel/my-agent.sock",
+        socket: "/var/run/zentinel/my-agent.sock",
         log_level: :info
       )
 
   ## Example - Reverse Connection
 
-      SentinelAgentSdk.V2.Runner.run(MyAgent,
+      ZentinelAgentSdk.V2.Runner.run(MyAgent,
         transport: :reverse,
         proxy_url: "http://localhost:9090/agents",
         auth_token: "secret-token",
@@ -33,7 +33,7 @@ defmodule SentinelAgentSdk.V2.Runner do
   - `:auth_token` - Authentication token for handshake
 
   ### UDS Transport Options
-  - `:socket` - Unix socket path (default: "/tmp/sentinel-agent.sock")
+  - `:socket` - Unix socket path (default: "/tmp/zentinel-agent.sock")
   - `:socket_permissions` - Socket file permissions (default: 0o660)
 
   ### Reverse Connection Options
@@ -56,10 +56,10 @@ defmodule SentinelAgentSdk.V2.Runner do
 
   require Logger
 
-  alias SentinelAgentSdk.Protocol
-  alias SentinelAgentSdk.V2.Handler
+  alias ZentinelAgentSdk.Protocol
+  alias ZentinelAgentSdk.V2.Handler
 
-  alias SentinelAgentSdk.V2.Types.{
+  alias ZentinelAgentSdk.V2.Types.{
     AgentCapabilities,
     HandshakeRequest,
     HandshakeResponse
@@ -89,7 +89,7 @@ defmodule SentinelAgentSdk.V2.Runner do
           }
 
     defstruct transport: :uds,
-              socket_path: "/tmp/sentinel-agent.sock",
+              socket_path: "/tmp/zentinel-agent.sock",
               socket_permissions: 0o660,
               proxy_url: nil,
               auth_token: nil,
@@ -111,7 +111,7 @@ defmodule SentinelAgentSdk.V2.Runner do
 
       %__MODULE__{
         transport: Keyword.get(opts, :transport, :uds),
-        socket_path: Keyword.get(opts, :socket, "/tmp/sentinel-agent.sock"),
+        socket_path: Keyword.get(opts, :socket, "/tmp/zentinel-agent.sock"),
         socket_permissions: Keyword.get(opts, :socket_permissions, 0o660),
         proxy_url: Keyword.get(opts, :proxy_url),
         auth_token: Keyword.get(opts, :auth_token),

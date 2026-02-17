@@ -1,4 +1,4 @@
-defmodule SentinelAgentSdk.Decision do
+defmodule ZentinelAgentSdk.Decision do
   @moduledoc """
   Fluent builder for agent decisions.
 
@@ -24,7 +24,7 @@ defmodule SentinelAgentSdk.Decision do
   - `challenge/2` - Challenge (e.g., CAPTCHA)
   """
 
-  alias SentinelAgentSdk.Protocol.{AgentResponse, AuditMetadata, HeaderOp}
+  alias ZentinelAgentSdk.Protocol.{AgentResponse, AuditMetadata, HeaderOp}
 
   @type t :: %__MODULE__{
           decision: String.t() | map(),
@@ -293,20 +293,20 @@ defmodule SentinelAgentSdk.Decision do
   end
 end
 
-defmodule SentinelAgentSdk.Decisions do
+defmodule ZentinelAgentSdk.Decisions do
   @moduledoc """
   Shorthand functions for common decisions.
 
   ## Example
 
-      import SentinelAgentSdk.Decisions
+      import ZentinelAgentSdk.Decisions
 
       def on_request(request) do
         if blocked?(request), do: deny(), else: allow()
       end
   """
 
-  alias SentinelAgentSdk.Decision
+  alias ZentinelAgentSdk.Decision
 
   @doc "Create an allow decision."
   @spec allow() :: Decision.t()

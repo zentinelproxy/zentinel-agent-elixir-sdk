@@ -1,12 +1,12 @@
 # Quickstart Guide
 
-This guide will help you create your first Sentinel agent in under 5 minutes.
+This guide will help you create your first Zentinel agent in under 5 minutes.
 
 ## Prerequisites
 
 - Elixir 1.17+
 - Erlang 27+
-- Sentinel proxy (for testing with real traffic)
+- Zentinel proxy (for testing with real traffic)
 
 ## Step 1: Create a New Project
 
@@ -22,7 +22,7 @@ Add the SDK to your `mix.exs`:
 ```elixir
 defp deps do
   [
-    {:sentinel_agent_sdk, github: "raskell-io/sentinel-agent-elixir-sdk"}
+    {:zentinel_agent_sdk, github: "zentinelproxy/zentinel-agent-elixir-sdk"}
   ]
 end
 ```
@@ -39,11 +39,11 @@ Create `lib/my_agent.ex`:
 
 ```elixir
 defmodule MyAgent do
-  @moduledoc "My first Sentinel agent."
+  @moduledoc "My first Zentinel agent."
 
-  use SentinelAgentSdk.Agent
+  use ZentinelAgentSdk.Agent
 
-  alias SentinelAgentSdk.{Decision, Request}
+  alias ZentinelAgentSdk.{Decision, Request}
 
   @impl true
   def name, do: "my-agent"
@@ -80,7 +80,7 @@ defmodule MyAgent.Application do
     socket = System.get_env("SOCKET_PATH", "/tmp/my-agent.sock")
 
     children = [
-      {Task, fn -> SentinelAgentSdk.run(MyAgent, socket: socket) end}
+      {Task, fn -> ZentinelAgentSdk.run(MyAgent, socket: socket) end}
     ]
 
     opts = [strategy: :one_for_one, name: MyAgent.Supervisor]
@@ -112,9 +112,9 @@ You should see:
 [info] Agent 'my-agent' listening on /tmp/my-agent.sock
 ```
 
-## Step 6: Configure Sentinel
+## Step 6: Configure Zentinel
 
-Add the agent to your Sentinel configuration (`sentinel.kdl`):
+Add the agent to your Zentinel configuration (`zentinel.kdl`):
 
 ```kdl
 agents {
@@ -148,7 +148,7 @@ routes {
 
 ## Step 7: Test It
 
-With Sentinel running, send a test request:
+With Zentinel running, send a test request:
 
 ```bash
 # This should pass through
@@ -160,11 +160,11 @@ curl http://localhost:8080/api/admin/settings
 
 ## Runner Options
 
-The `SentinelAgentSdk.run/2` function supports these options:
+The `ZentinelAgentSdk.run/2` function supports these options:
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `:socket` | Unix socket path | `/tmp/sentinel-agent.sock` |
+| `:socket` | Unix socket path | `/tmp/zentinel-agent.sock` |
 | `:log_level` | Log level (`:debug`, `:info`, `:warning`, `:error`) | `:info` |
 | `:json_logs` | Enable JSON log format | `false` |
 
@@ -172,4 +172,4 @@ The `SentinelAgentSdk.run/2` function supports these options:
 
 - Read the [API Reference](api.md) for complete documentation
 - See [Examples](examples.md) for common patterns
-- Learn about [Sentinel Configuration](configuration.md) options
+- Learn about [Zentinel Configuration](configuration.md) options

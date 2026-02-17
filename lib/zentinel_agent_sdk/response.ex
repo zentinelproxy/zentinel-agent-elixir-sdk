@@ -1,4 +1,4 @@
-defmodule SentinelAgentSdk.Response do
+defmodule ZentinelAgentSdk.Response do
   @moduledoc """
   Ergonomic wrapper around HTTP response data.
 
@@ -18,7 +18,7 @@ defmodule SentinelAgentSdk.Response do
       end
   """
 
-  alias SentinelAgentSdk.Protocol.ResponseHeadersEvent
+  alias ZentinelAgentSdk.Protocol.ResponseHeadersEvent
 
   @type t :: %__MODULE__{
           event: ResponseHeadersEvent.t(),
@@ -189,7 +189,7 @@ defmodule SentinelAgentSdk.Response do
   end
 
   defimpl Inspect do
-    def inspect(%SentinelAgentSdk.Response{event: event}, _opts) do
+    def inspect(%ZentinelAgentSdk.Response{event: event}, _opts) do
       "#Response<#{event.status}>"
     end
   end

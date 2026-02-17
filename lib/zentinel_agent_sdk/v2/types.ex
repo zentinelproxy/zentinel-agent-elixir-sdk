@@ -1,6 +1,6 @@
-defmodule SentinelAgentSdk.V2.Types do
+defmodule ZentinelAgentSdk.V2.Types do
   @moduledoc """
-  V2 protocol types for Sentinel agent communication.
+  V2 protocol types for Zentinel agent communication.
 
   These types support the enhanced v2 protocol features including:
   - Agent capabilities declaration

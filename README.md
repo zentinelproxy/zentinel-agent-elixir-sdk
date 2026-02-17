@@ -1,11 +1,11 @@
 <div align="center">
 
 <h1 align="center">
-  Sentinel Agent Elixir SDK
+  Zentinel Agent Elixir SDK
 </h1>
 
 <p align="center">
-  <em>Build agents that extend Sentinel's security and policy capabilities.</em><br>
+  <em>Build agents that extend Zentinel's security and policy capabilities.</em><br>
   <em>Inspect, block, redirect, and transform HTTP traffic.</em>
 </p>
 
@@ -13,8 +13,8 @@
   <a href="https://elixir-lang.org/">
     <img alt="Elixir" src="https://img.shields.io/badge/Elixir-1.17+-4b275f?logo=elixir&logoColor=white&style=for-the-badge">
   </a>
-  <a href="https://github.com/raskell-io/sentinel">
-    <img alt="Sentinel" src="https://img.shields.io/badge/Built%20for-Sentinel-f5a97f?style=for-the-badge">
+  <a href="https://github.com/zentinelproxy/zentinel">
+    <img alt="Zentinel" src="https://img.shields.io/badge/Built%20for-Zentinel-f5a97f?style=for-the-badge">
   </a>
   <a href="LICENSE">
     <img alt="License" src="https://img.shields.io/badge/License-Apache--2.0-c6a0f6?style=for-the-badge">
@@ -32,16 +32,16 @@
 
 ---
 
-The Sentinel Agent Elixir SDK provides a simple, behaviour-based API for building agents that integrate with the [Sentinel](https://github.com/raskell-io/sentinel) reverse proxy. Agents can inspect requests and responses, block malicious traffic, add headers, and attach audit metadata—all from Elixir.
+The Zentinel Agent Elixir SDK provides a simple, behaviour-based API for building agents that integrate with the [Zentinel](https://github.com/zentinelproxy/zentinel) reverse proxy. Agents can inspect requests and responses, block malicious traffic, add headers, and attach audit metadata—all from Elixir.
 
 ## Quick Start
 
-Add `sentinel_agent_sdk` to your dependencies in `mix.exs`:
+Add `zentinel_agent_sdk` to your dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:sentinel_agent_sdk, github: "raskell-io/sentinel-agent-elixir-sdk"}
+    {:zentinel_agent_sdk, github: "zentinelproxy/zentinel-agent-elixir-sdk"}
   ]
 end
 ```
@@ -50,9 +50,9 @@ Create `my_agent.ex`:
 
 ```elixir
 defmodule MyAgent do
-  use SentinelAgentSdk.Agent
+  use ZentinelAgentSdk.Agent
 
-  alias SentinelAgentSdk.{Decision, Request}
+  alias ZentinelAgentSdk.{Decision, Request}
 
   @impl true
   def name, do: "my-agent"
@@ -68,13 +68,13 @@ defmodule MyAgent do
 end
 
 # Run the agent
-SentinelAgentSdk.run(MyAgent, socket: "/tmp/my-agent.sock")
+ZentinelAgentSdk.run(MyAgent, socket: "/tmp/my-agent.sock")
 ```
 
 Run the agent:
 
 ```bash
-mix run --no-halt -e 'SentinelAgentSdk.run(MyAgent, socket: "/tmp/my-agent.sock")'
+mix run --no-halt -e 'ZentinelAgentSdk.run(MyAgent, socket: "/tmp/my-agent.sock")'
 ```
 
 ## Features
@@ -86,24 +86,24 @@ mix run --no-halt -e 'SentinelAgentSdk.run(MyAgent, socket: "/tmp/my-agent.sock"
 | **Request/Response Wrappers** | Ergonomic access to headers, body, query params, metadata |
 | **Typed Configuration** | `ConfigurableAgent` behaviour with struct-based config support |
 | **OTP Native** | Built on OTP for reliable, concurrent processing |
-| **Protocol Compatible** | Full compatibility with Sentinel agent protocol v1 |
+| **Protocol Compatible** | Full compatibility with Zentinel agent protocol v1 |
 
 ## Why Agents?
 
-Sentinel's agent system moves complex logic **out of the proxy core** and into isolated, testable, independently deployable processes:
+Zentinel's agent system moves complex logic **out of the proxy core** and into isolated, testable, independently deployable processes:
 
 - **Security isolation** — WAF engines, auth validation, and custom logic run in separate processes
 - **Language flexibility** — Write agents in Elixir, Python, Rust, Go, or any language
 - **Independent deployment** — Update agent logic without restarting the proxy
 - **Failure boundaries** — Agent crashes don't take down the dataplane
 
-Agents communicate with Sentinel over Unix sockets using a simple length-prefixed JSON protocol.
+Agents communicate with Zentinel over Unix sockets using a simple length-prefixed JSON protocol.
 
 ## Architecture
 
 ```
 ┌─────────────┐         ┌──────────────┐         ┌──────────────┐
-│   Client    │────────▶│   Sentinel   │────────▶│   Upstream   │
+│   Client    │────────▶│   Zentinel   │────────▶│   Upstream   │
 └─────────────┘         └──────────────┘         └──────────────┘
                                │
                                │ Unix Socket (JSON)
@@ -114,10 +114,10 @@ Agents communicate with Sentinel over Unix sockets using a simple length-prefixe
                         └──────────────┘
 ```
 
-1. Client sends request to Sentinel
-2. Sentinel forwards request headers to agent
+1. Client sends request to Zentinel
+2. Zentinel forwards request headers to agent
 3. Agent returns decision (allow, block, redirect) with optional header mutations
-4. Sentinel applies the decision
+4. Zentinel applies the decision
 5. Agent can also inspect response headers before they reach the client
 
 ---
@@ -130,9 +130,9 @@ The `Agent` behaviour defines the hooks you can implement:
 
 ```elixir
 defmodule MyAgent do
-  use SentinelAgentSdk.Agent
+  use ZentinelAgentSdk.Agent
 
-  alias SentinelAgentSdk.{Decision, Request, Response}
+  alias ZentinelAgentSdk.{Decision, Request, Response}
 
   @impl true
   def name, do: "my-agent"
@@ -175,7 +175,7 @@ Access HTTP request data with convenience functions:
 
 ```elixir
 def on_request(request) do
-  alias SentinelAgentSdk.Request
+  alias ZentinelAgentSdk.Request
 
   # Path matching
   if Request.path_starts_with?(request, "/api/"), do: # ...
@@ -214,7 +214,7 @@ Inspect upstream responses before they reach the client:
 
 ```elixir
 def on_response(request, response) do
-  alias SentinelAgentSdk.Response
+  alias ZentinelAgentSdk.Response
 
   # Status code
   if Response.status_code(response) >= 500 do
@@ -237,7 +237,7 @@ end
 Build responses with a fluent API using the pipe operator:
 
 ```elixir
-alias SentinelAgentSdk.Decision
+alias ZentinelAgentSdk.Decision
 
 # Allow the request
 Decision.allow()
@@ -264,7 +264,7 @@ Decision.allow()
 |> Decision.add_response_header("X-Cache", "HIT")
 |> Decision.remove_response_header("X-Powered-By")
 
-# Audit metadata (appears in Sentinel logs)
+# Audit metadata (appears in Zentinel logs)
 Decision.deny()
 |> Decision.with_tag("blocked")
 |> Decision.with_rule_id("SQLI-001")
@@ -282,9 +282,9 @@ defmodule RateLimitConfig do
 end
 
 defmodule RateLimitAgent do
-  use SentinelAgentSdk.ConfigurableAgent
+  use ZentinelAgentSdk.ConfigurableAgent
 
-  alias SentinelAgentSdk.{Decision, Request}
+  alias ZentinelAgentSdk.{Decision, Request}
 
   @impl true
   def name, do: "rate-limiter"
@@ -326,10 +326,10 @@ end
 
 ```elixir
 # Simple usage
-SentinelAgentSdk.run(MyAgent, socket: "/tmp/my-agent.sock")
+ZentinelAgentSdk.run(MyAgent, socket: "/tmp/my-agent.sock")
 
 # With options
-SentinelAgentSdk.run(MyAgent,
+ZentinelAgentSdk.run(MyAgent,
   socket: "/tmp/my-agent.sock",
   log_level: :debug,
   json_logs: true
@@ -338,7 +338,7 @@ SentinelAgentSdk.run(MyAgent,
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `:socket` | Unix socket path | `/tmp/sentinel-agent.sock` |
+| `:socket` | Unix socket path | `/tmp/zentinel-agent.sock` |
 | `:log_level` | `:debug`, `:info`, `:warning`, `:error` | `:info` |
 | `:json_logs` | Output logs as JSON | `false` |
 
@@ -349,14 +349,14 @@ SentinelAgentSdk.run(MyAgent,
 elixir examples/simple_agent.exs
 
 # With custom socket
-elixir -e 'SentinelAgentSdk.run(MyAgent, socket: "/tmp/custom.sock")'
+elixir -e 'ZentinelAgentSdk.run(MyAgent, socket: "/tmp/custom.sock")'
 ```
 
 ---
 
-## Sentinel Configuration
+## Zentinel Configuration
 
-Configure Sentinel to connect to your agent:
+Configure Zentinel to connect to your agent:
 
 ```kdl
 agents {
@@ -451,8 +451,8 @@ mix test
 ### Project Structure
 
 ```
-sentinel-agent-elixir-sdk/
-├── lib/sentinel_agent_sdk/
+zentinel-agent-elixir-sdk/
+├── lib/zentinel_agent_sdk/
 │   ├── agent.ex         # Agent and ConfigurableAgent behaviours
 │   ├── decision.ex      # Decision builder
 │   ├── protocol.ex      # Wire protocol types and encoding
@@ -460,7 +460,7 @@ sentinel-agent-elixir-sdk/
 │   ├── response.ex      # Response wrapper
 │   └── runner.ex        # Runner and socket handling
 ├── test/
-│   ├── sentinel_agent_sdk_test.exs     # Unit tests
+│   ├── zentinel_agent_sdk_test.exs     # Unit tests
 │   ├── protocol_conformance_test.exs   # Protocol compatibility tests
 │   └── integration/                    # Integration tests
 ├── examples/                           # Example agents
@@ -471,7 +471,7 @@ sentinel-agent-elixir-sdk/
 
 ## Protocol
 
-This SDK implements Sentinel Agent Protocol v1:
+This SDK implements Zentinel Agent Protocol v1:
 
 - **Transport**: Unix domain sockets (UDS) or gRPC
 - **Encoding**: Length-prefixed JSON (4-byte big-endian length prefix) for UDS
@@ -481,15 +481,15 @@ This SDK implements Sentinel Agent Protocol v1:
 
 The protocol is designed for low latency and high throughput, with support for streaming body inspection.
 
-For the canonical protocol specification, see the [Sentinel Agent Protocol documentation](https://github.com/raskell-io/sentinel/tree/main/crates/agent-protocol).
+For the canonical protocol specification, see the [Zentinel Agent Protocol documentation](https://github.com/zentinelproxy/zentinel/tree/main/crates/agent-protocol).
 
 ---
 
 ## Community
 
-- [Issues](https://github.com/raskell-io/sentinel-agent-elixir-sdk/issues) — Bug reports and feature requests
-- [Sentinel Discussions](https://github.com/raskell-io/sentinel/discussions) — Questions and ideas
-- [Sentinel Documentation](https://sentinel.raskell.io/docs) — Proxy documentation
+- [Issues](https://github.com/zentinelproxy/zentinel-agent-elixir-sdk/issues) — Bug reports and feature requests
+- [Zentinel Discussions](https://github.com/zentinelproxy/zentinel/discussions) — Questions and ideas
+- [Zentinel Documentation](https://zentinelproxy.io/docs) — Proxy documentation
 
 Contributions welcome. Please open an issue to discuss significant changes before submitting a PR.
 

@@ -1,7 +1,7 @@
-defmodule SentinelAgentSdk.V2.TypesTest do
+defmodule ZentinelAgentSdk.V2.TypesTest do
   use ExUnit.Case, async: true
 
-  alias SentinelAgentSdk.V2.Types.{
+  alias ZentinelAgentSdk.V2.Types.{
     AgentCapabilities,
     CancelRequest,
     DrainRequest,

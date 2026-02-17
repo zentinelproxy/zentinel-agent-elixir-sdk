@@ -1,5 +1,5 @@
 # Define Config first so it can be used by other modules in this file
-defmodule SentinelAgentSdk.Runner.Config do
+defmodule ZentinelAgentSdk.Runner.Config do
   @moduledoc false
 
   @type t :: %__MODULE__{
@@ -9,7 +9,7 @@ defmodule SentinelAgentSdk.Runner.Config do
           log_level: atom()
         }
 
-  defstruct socket_path: "/tmp/sentinel-agent.sock",
+  defstruct socket_path: "/tmp/zentinel-agent.sock",
             name: "agent",
             json_logs: false,
             log_level: :info
@@ -24,7 +24,7 @@ defmodule SentinelAgentSdk.Runner.Config do
       end
 
     %__MODULE__{
-      socket_path: Keyword.get(opts, :socket, "/tmp/sentinel-agent.sock"),
+      socket_path: Keyword.get(opts, :socket, "/tmp/zentinel-agent.sock"),
       name: name,
       json_logs: Keyword.get(opts, :json_logs, false),
       log_level: Keyword.get(opts, :log_level, :info)
@@ -33,14 +33,14 @@ defmodule SentinelAgentSdk.Runner.Config do
 end
 
 # Define Handler next
-defmodule SentinelAgentSdk.Runner.Handler do
+defmodule ZentinelAgentSdk.Runner.Handler do
   @moduledoc false
 
   require Logger
 
-  alias SentinelAgentSdk.{Decision, Request, Response}
+  alias ZentinelAgentSdk.{Decision, Request, Response}
 
-  alias SentinelAgentSdk.Protocol.{
+  alias ZentinelAgentSdk.Protocol.{
     ConfigureEvent,
     GuardrailInspectEvent,
     GuardrailResponse,
@@ -53,7 +53,7 @@ defmodule SentinelAgentSdk.Runner.Handler do
 
   @type t :: %__MODULE__{
           agent_module: module(),
-          config: SentinelAgentSdk.Runner.Config.t(),
+          config: ZentinelAgentSdk.Runner.Config.t(),
           agent_config: term(),
           requests: %{String.t() => Request.t()},
           request_bodies: %{String.t() => binary()},
@@ -71,7 +71,7 @@ defmodule SentinelAgentSdk.Runner.Handler do
     response_events: %{}
   ]
 
-  @spec new(module(), SentinelAgentSdk.Runner.Config.t()) :: t()
+  @spec new(module(), ZentinelAgentSdk.Runner.Config.t()) :: t()
   def new(agent_module, config) do
     %__MODULE__{
       agent_module: agent_module,
@@ -333,7 +333,7 @@ defmodule SentinelAgentSdk.Runner.Handler do
 end
 
 # Define Runner last since it depends on Config and Handler
-defmodule SentinelAgentSdk.Runner do
+defmodule ZentinelAgentSdk.Runner do
   @moduledoc """
   Runner for starting and managing an agent.
 
@@ -342,10 +342,10 @@ defmodule SentinelAgentSdk.Runner do
   ## Example
 
       # Simple agent
-      SentinelAgentSdk.Runner.run(MyAgent, socket: "/tmp/my-agent.sock")
+      ZentinelAgentSdk.Runner.run(MyAgent, socket: "/tmp/my-agent.sock")
 
       # With options
-      SentinelAgentSdk.Runner.run(MyAgent,
+      ZentinelAgentSdk.Runner.run(MyAgent,
         socket: "/tmp/my-agent.sock",
         log_level: :debug,
         json_logs: true
@@ -354,14 +354,14 @@ defmodule SentinelAgentSdk.Runner do
 
   require Logger
 
-  alias SentinelAgentSdk.Runner.{Config, Handler}
+  alias ZentinelAgentSdk.Runner.{Config, Handler}
 
   @doc """
   Run an agent with the given options.
 
   ## Options
 
-  - `:socket` - Unix socket path (default: "/tmp/sentinel-agent.sock")
+  - `:socket` - Unix socket path (default: "/tmp/zentinel-agent.sock")
   - `:log_level` - Log level (:debug, :info, :warning, :error)
   - `:json_logs` - Enable JSON log format (default: false)
 
@@ -459,11 +459,11 @@ defmodule SentinelAgentSdk.Runner do
   end
 
   defp connection_loop(socket, handler) do
-    case SentinelAgentSdk.Protocol.read_message(socket) do
+    case ZentinelAgentSdk.Protocol.read_message(socket) do
       {:ok, message} ->
         {response, handler} = Handler.handle_event(handler, message)
 
-        case SentinelAgentSdk.Protocol.write_message(socket, response) do
+        case ZentinelAgentSdk.Protocol.write_message(socket, response) do
           :ok ->
             connection_loop(socket, handler)
 

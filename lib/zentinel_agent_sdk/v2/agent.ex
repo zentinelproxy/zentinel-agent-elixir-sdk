@@ -1,6 +1,6 @@
-defmodule SentinelAgentSdk.V2.Agent do
+defmodule ZentinelAgentSdk.V2.Agent do
   @moduledoc """
-  V2 behaviour for Sentinel agents with enhanced capabilities.
+  V2 behaviour for Zentinel agents with enhanced capabilities.
 
   Extends the base Agent behaviour with v2 protocol features:
   - Capability declaration
@@ -12,7 +12,7 @@ defmodule SentinelAgentSdk.V2.Agent do
   ## Example
 
       defmodule MyWafAgent do
-        use SentinelAgentSdk.V2.Agent
+        use ZentinelAgentSdk.V2.Agent
 
         @impl true
         def name, do: "waf-agent"
@@ -70,9 +70,9 @@ defmodule SentinelAgentSdk.V2.Agent do
   - `metrics/0` - Return current metrics
   """
 
-  alias SentinelAgentSdk.{Decision, Request, Response}
+  alias ZentinelAgentSdk.{Decision, Request, Response}
 
-  alias SentinelAgentSdk.V2.Types.{
+  alias ZentinelAgentSdk.V2.Types.{
     AgentCapabilities,
     CancelRequest,
     DrainRequest,
@@ -80,7 +80,7 @@ defmodule SentinelAgentSdk.V2.Agent do
     MetricsReport
   }
 
-  alias SentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
+  alias ZentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
 
   # ============================================================================
   # Required Callbacks
@@ -314,11 +314,11 @@ defmodule SentinelAgentSdk.V2.Agent do
 
   defmacro __using__(_opts) do
     quote do
-      @behaviour SentinelAgentSdk.V2.Agent
+      @behaviour ZentinelAgentSdk.V2.Agent
 
-      alias SentinelAgentSdk.{Decision, Request, Response}
+      alias ZentinelAgentSdk.{Decision, Request, Response}
 
-      alias SentinelAgentSdk.V2.Types.{
+      alias ZentinelAgentSdk.V2.Types.{
         AgentCapabilities,
         CancelRequest,
         DrainRequest,
@@ -326,7 +326,7 @@ defmodule SentinelAgentSdk.V2.Agent do
         MetricsReport
       }
 
-      alias SentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
+      alias ZentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
 
       # Default implementations
 
@@ -390,11 +390,11 @@ defmodule SentinelAgentSdk.V2.Agent do
   end
 end
 
-defmodule SentinelAgentSdk.V2.ConfigurableAgent do
+defmodule ZentinelAgentSdk.V2.ConfigurableAgent do
   @moduledoc """
   V2 behaviour for agents with typed configuration support.
 
-  Extends `SentinelAgentSdk.V2.Agent` with configuration parsing.
+  Extends `ZentinelAgentSdk.V2.Agent` with configuration parsing.
 
   ## Example
 
@@ -403,7 +403,7 @@ defmodule SentinelAgentSdk.V2.ConfigurableAgent do
       end
 
       defmodule RateLimitAgentV2 do
-        use SentinelAgentSdk.V2.ConfigurableAgent
+        use ZentinelAgentSdk.V2.ConfigurableAgent
 
         @impl true
         def name, do: "rate-limit-v2"
@@ -444,16 +444,16 @@ defmodule SentinelAgentSdk.V2.ConfigurableAgent do
       end
   """
 
-  alias SentinelAgentSdk.{Decision, Request, Response}
+  alias ZentinelAgentSdk.{Decision, Request, Response}
 
-  alias SentinelAgentSdk.V2.Types.{
+  alias ZentinelAgentSdk.V2.Types.{
     AgentCapabilities,
     CancelRequest,
     HealthStatus,
     MetricsReport
   }
 
-  alias SentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
+  alias ZentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
 
   # ============================================================================
   # Required Callbacks
@@ -517,11 +517,11 @@ defmodule SentinelAgentSdk.V2.ConfigurableAgent do
 
   defmacro __using__(_opts) do
     quote do
-      @behaviour SentinelAgentSdk.V2.ConfigurableAgent
+      @behaviour ZentinelAgentSdk.V2.ConfigurableAgent
 
-      alias SentinelAgentSdk.{Decision, Request, Response}
+      alias ZentinelAgentSdk.{Decision, Request, Response}
 
-      alias SentinelAgentSdk.V2.Types.{
+      alias ZentinelAgentSdk.V2.Types.{
         AgentCapabilities,
         CancelRequest,
         DrainRequest,
@@ -529,7 +529,7 @@ defmodule SentinelAgentSdk.V2.ConfigurableAgent do
         MetricsReport
       }
 
-      alias SentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
+      alias ZentinelAgentSdk.Protocol.{GuardrailInspectEvent, GuardrailResponse}
 
       @impl true
       def version, do: "0.0.0"

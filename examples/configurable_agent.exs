@@ -1,5 +1,5 @@
 #!/usr/bin/env elixir
-# Configurable Sentinel agent example.
+# Configurable Zentinel agent example.
 #
 # This example demonstrates an agent with typed configuration that:
 # - Accepts rate limit configuration from the proxy
@@ -10,7 +10,7 @@
 # Or: mix run examples/configurable_agent.exs
 
 Mix.install([
-  {:sentinel_agent_sdk, path: "."}
+  {:zentinel_agent_sdk, path: "."}
 ])
 
 defmodule RateLimitConfig do
@@ -32,7 +32,7 @@ defmodule RateLimitAgent do
   or distributed state management.
   """
 
-  use SentinelAgentSdk.ConfigurableAgent
+  use ZentinelAgentSdk.ConfigurableAgent
 
   @impl true
   def name, do: "rate-limit-agent"
@@ -149,12 +149,12 @@ end
     strict: [socket: :string, log_level: :string, json_logs: :boolean]
   )
 
-socket = Keyword.get(opts, :socket, "/tmp/sentinel-agent.sock")
+socket = Keyword.get(opts, :socket, "/tmp/zentinel-agent.sock")
 log_level = Keyword.get(opts, :log_level, "info") |> String.to_atom()
 json_logs = Keyword.get(opts, :json_logs, false)
 
 # Run the agent
-SentinelAgentSdk.run(RateLimitAgent,
+ZentinelAgentSdk.run(RateLimitAgent,
   socket: socket,
   log_level: log_level,
   json_logs: json_logs

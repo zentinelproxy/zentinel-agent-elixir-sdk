@@ -1,5 +1,5 @@
 #!/usr/bin/env elixir
-# Simple V2 Sentinel agent example.
+# Simple V2 Zentinel agent example.
 #
 # This example demonstrates a basic V2 agent that:
 # - Declares its capabilities
@@ -11,7 +11,7 @@
 # Or: mix run examples/v2_simple_agent.exs
 
 Mix.install([
-  {:sentinel_agent_sdk, path: "."}
+  {:zentinel_agent_sdk, path: "."}
 ])
 
 defmodule SimpleAgentV2 do
@@ -19,7 +19,7 @@ defmodule SimpleAgentV2 do
   A simple V2 agent that blocks admin paths with capability declaration.
   """
 
-  use SentinelAgentSdk.V2.Agent
+  use ZentinelAgentSdk.V2.Agent
 
   @impl true
   def name, do: "simple-agent-v2"
@@ -124,14 +124,14 @@ transport =
     other -> raise "Unknown transport: #{other}"
   end
 
-socket = Keyword.get(opts, :socket, "/tmp/sentinel-agent-v2.sock")
+socket = Keyword.get(opts, :socket, "/tmp/zentinel-agent-v2.sock")
 log_level = Keyword.get(opts, :log_level, "info") |> String.to_atom()
 json_logs = Keyword.get(opts, :json_logs, false)
 proxy_url = Keyword.get(opts, :proxy_url)
 auth_token = Keyword.get(opts, :auth_token)
 
 # Run the agent
-SentinelAgentSdk.V2.run(SimpleAgentV2,
+ZentinelAgentSdk.V2.run(SimpleAgentV2,
   transport: transport,
   socket: socket,
   proxy_url: proxy_url,

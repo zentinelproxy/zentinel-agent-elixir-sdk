@@ -1,16 +1,16 @@
 defmodule ProtocolConformanceTest do
   @moduledoc """
-  Protocol conformance tests for Sentinel Agent SDK.
+  Protocol conformance tests for Zentinel Agent SDK.
 
   These tests verify that the Elixir SDK produces JSON that is compatible
-  with the Rust protocol implementation in sentinel-agent-protocol.
+  with the Rust protocol implementation in zentinel-agent-protocol.
   """
 
   use ExUnit.Case
 
-  alias SentinelAgentSdk.Decision
-  alias SentinelAgentSdk.Protocol
-  alias SentinelAgentSdk.Protocol.{
+  alias ZentinelAgentSdk.Decision
+  alias ZentinelAgentSdk.Protocol
+  alias ZentinelAgentSdk.Protocol.{
     HeaderOp,
     RequestBodyChunkEvent,
     RequestHeadersEvent,
@@ -121,7 +121,7 @@ defmodule ProtocolConformanceTest do
     test "response includes header operations" do
       response =
         Decision.allow()
-        |> Decision.add_request_header("X-Forwarded-By", "sentinel")
+        |> Decision.add_request_header("X-Forwarded-By", "zentinel")
         |> Decision.remove_request_header("X-Internal")
         |> Decision.add_response_header("X-Cache", "HIT")
         |> Decision.build()
@@ -131,7 +131,7 @@ defmodule ProtocolConformanceTest do
       assert length(data["request_headers"]) == 2
 
       assert Enum.at(data["request_headers"], 0) == %{
-               "set" => %{"name" => "X-Forwarded-By", "value" => "sentinel"}
+               "set" => %{"name" => "X-Forwarded-By", "value" => "zentinel"}
              }
 
       assert Enum.at(data["request_headers"], 1) == %{"remove" => %{"name" => "X-Internal"}}

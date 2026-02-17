@@ -1,6 +1,6 @@
-defmodule SentinelAgentSdk.V2 do
+defmodule ZentinelAgentSdk.V2 do
   @moduledoc """
-  V2 protocol support for Sentinel agents.
+  V2 protocol support for Zentinel agents.
 
   The v2 protocol provides enhanced features over v1:
 
@@ -14,7 +14,7 @@ defmodule SentinelAgentSdk.V2 do
   ## Quick Start
 
       defmodule MyAgentV2 do
-        use SentinelAgentSdk.V2.Agent
+        use ZentinelAgentSdk.V2.Agent
 
         @impl true
         def name, do: "my-agent-v2"
@@ -44,29 +44,29 @@ defmodule SentinelAgentSdk.V2 do
       end
 
       # Run with UDS transport
-      SentinelAgentSdk.V2.run(MyAgentV2,
+      ZentinelAgentSdk.V2.run(MyAgentV2,
         transport: :uds,
-        socket: "/var/run/sentinel/my-agent.sock"
+        socket: "/var/run/zentinel/my-agent.sock"
       )
 
   ## Modules
 
   ### Behaviours
-  - `SentinelAgentSdk.V2.Agent` - Base v2 agent behaviour
-  - `SentinelAgentSdk.V2.ConfigurableAgent` - V2 agent with typed config
+  - `ZentinelAgentSdk.V2.Agent` - Base v2 agent behaviour
+  - `ZentinelAgentSdk.V2.ConfigurableAgent` - V2 agent with typed config
 
   ### Types
-  - `SentinelAgentSdk.V2.Types.AgentCapabilities` - Capability declaration
-  - `SentinelAgentSdk.V2.Types.HealthStatus` - Health status reporting
-  - `SentinelAgentSdk.V2.Types.MetricsReport` - Metrics collection
-  - `SentinelAgentSdk.V2.Types.HandshakeRequest` - Handshake request
-  - `SentinelAgentSdk.V2.Types.HandshakeResponse` - Handshake response
-  - `SentinelAgentSdk.V2.Types.CancelRequest` - Request cancellation
-  - `SentinelAgentSdk.V2.Types.DrainRequest` - Drain request
+  - `ZentinelAgentSdk.V2.Types.AgentCapabilities` - Capability declaration
+  - `ZentinelAgentSdk.V2.Types.HealthStatus` - Health status reporting
+  - `ZentinelAgentSdk.V2.Types.MetricsReport` - Metrics collection
+  - `ZentinelAgentSdk.V2.Types.HandshakeRequest` - Handshake request
+  - `ZentinelAgentSdk.V2.Types.HandshakeResponse` - Handshake response
+  - `ZentinelAgentSdk.V2.Types.CancelRequest` - Request cancellation
+  - `ZentinelAgentSdk.V2.Types.DrainRequest` - Drain request
 
   ### Runtime
-  - `SentinelAgentSdk.V2.Handler` - Event handler GenServer
-  - `SentinelAgentSdk.V2.Runner` - Agent runner with transport support
+  - `ZentinelAgentSdk.V2.Handler` - Event handler GenServer
+  - `ZentinelAgentSdk.V2.Runner` - Agent runner with transport support
 
   ## Transports
 
@@ -74,16 +74,16 @@ defmodule SentinelAgentSdk.V2 do
 
   The default transport, suitable for agents co-located with the proxy.
 
-      SentinelAgentSdk.V2.run(MyAgent,
+      ZentinelAgentSdk.V2.run(MyAgent,
         transport: :uds,
-        socket: "/var/run/sentinel/agent.sock"
+        socket: "/var/run/zentinel/agent.sock"
       )
 
   ### Reverse Connection
 
   For agents that need to connect to the proxy (e.g., behind NAT).
 
-      SentinelAgentSdk.V2.run(MyAgent,
+      ZentinelAgentSdk.V2.run(MyAgent,
         transport: :reverse,
         proxy_url: "http://proxy.internal:9090/agents",
         auth_token: "secret",
@@ -124,7 +124,7 @@ defmodule SentinelAgentSdk.V2 do
       end
   """
 
-  alias SentinelAgentSdk.V2.Runner
+  alias ZentinelAgentSdk.V2.Runner
 
   @doc """
   Run a V2 agent with the given options.
@@ -135,7 +135,7 @@ defmodule SentinelAgentSdk.V2 do
   - `:transport` - Transport type: `:uds` (default), `:reverse`
 
   ### UDS Options
-  - `:socket` - Unix socket path (default: "/tmp/sentinel-agent.sock")
+  - `:socket` - Unix socket path (default: "/tmp/zentinel-agent.sock")
   - `:socket_permissions` - File permissions (default: 0o660)
 
   ### Reverse Connection Options
@@ -151,9 +151,9 @@ defmodule SentinelAgentSdk.V2 do
 
   ## Example
 
-      SentinelAgentSdk.V2.run(MyAgent,
+      ZentinelAgentSdk.V2.run(MyAgent,
         transport: :uds,
-        socket: "/var/run/sentinel/my-agent.sock",
+        socket: "/var/run/zentinel/my-agent.sock",
         log_level: :info
       )
   """
@@ -178,7 +178,7 @@ defmodule SentinelAgentSdk.V2 do
   ## Example
 
       children = [
-        SentinelAgentSdk.V2.child_spec(MyAgent, socket: "/tmp/agent.sock")
+        ZentinelAgentSdk.V2.child_spec(MyAgent, socket: "/tmp/agent.sock")
       ]
 
       Supervisor.start_link(children, strategy: :one_for_one)

@@ -1,9 +1,9 @@
-defmodule SentinelAgentSdk.V2.HandlerTest do
+defmodule ZentinelAgentSdk.V2.HandlerTest do
   use ExUnit.Case, async: true
 
-  alias SentinelAgentSdk.V2.Handler
+  alias ZentinelAgentSdk.V2.Handler
 
-  alias SentinelAgentSdk.V2.Types.{
+  alias ZentinelAgentSdk.V2.Types.{
     AgentCapabilities,
     HandshakeResponse,
     HealthStatus
@@ -11,7 +11,7 @@ defmodule SentinelAgentSdk.V2.HandlerTest do
 
   # Test agent module
   defmodule TestAgentV2 do
-    use SentinelAgentSdk.V2.Agent
+    use ZentinelAgentSdk.V2.Agent
 
     @impl true
     def name, do: "test-agent-v2"
@@ -31,13 +31,13 @@ defmodule SentinelAgentSdk.V2.HandlerTest do
 
     @impl true
     def on_request(request) do
-      path = SentinelAgentSdk.Request.path_only(request)
+      path = ZentinelAgentSdk.Request.path_only(request)
 
       if String.starts_with?(path, "/blocked") do
-        SentinelAgentSdk.Decision.deny()
-        |> SentinelAgentSdk.Decision.with_body("Blocked")
+        ZentinelAgentSdk.Decision.deny()
+        |> ZentinelAgentSdk.Decision.with_body("Blocked")
       else
-        SentinelAgentSdk.Decision.allow()
+        ZentinelAgentSdk.Decision.allow()
       end
     end
 

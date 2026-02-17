@@ -1,5 +1,5 @@
 #!/usr/bin/env elixir
-# Body inspection Sentinel agent example.
+# Body inspection Zentinel agent example.
 #
 # This example demonstrates an agent that:
 # - Inspects request bodies for sensitive data patterns
@@ -10,7 +10,7 @@
 # Or: mix run examples/body_inspection_agent.exs
 
 Mix.install([
-  {:sentinel_agent_sdk, path: "."}
+  {:zentinel_agent_sdk, path: "."}
 ])
 
 defmodule BodyInspectionAgent do
@@ -18,7 +18,7 @@ defmodule BodyInspectionAgent do
   An agent that inspects request bodies for sensitive data.
   """
 
-  use SentinelAgentSdk.Agent
+  use ZentinelAgentSdk.Agent
 
   # Patterns that might indicate sensitive data
   @sensitive_patterns [
@@ -133,12 +133,12 @@ end
     strict: [socket: :string, log_level: :string, json_logs: :boolean]
   )
 
-socket = Keyword.get(opts, :socket, "/tmp/sentinel-agent.sock")
+socket = Keyword.get(opts, :socket, "/tmp/zentinel-agent.sock")
 log_level = Keyword.get(opts, :log_level, "info") |> String.to_atom()
 json_logs = Keyword.get(opts, :json_logs, false)
 
 # Run the agent
-SentinelAgentSdk.run(BodyInspectionAgent,
+ZentinelAgentSdk.run(BodyInspectionAgent,
   socket: socket,
   log_level: log_level,
   json_logs: json_logs
