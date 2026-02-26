@@ -7,6 +7,7 @@ defmodule ZentinelAgentSdk.Protocol do
   """
 
   @protocol_version 2
+  # Legacy v1 message size limit (10 MB). V2 uses 16 MB (UDS) / 10 MB (gRPC).
   @max_message_size 10 * 1024 * 1024
 
   @doc "Returns the current protocol version."
@@ -625,7 +626,7 @@ defmodule ZentinelAgentSdk.Protocol do
   end
 
   @doc """
-  Decode a length-prefixed JSON message.
+  Decode a length-prefixed message.
 
   Returns `{:ok, map}` on success, `{:error, reason}` on failure.
   """
