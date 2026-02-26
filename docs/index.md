@@ -4,7 +4,7 @@ An Elixir SDK for building agents that integrate with the [Zentinel](https://git
 
 ## Overview
 
-Zentinel agents are external processors that can inspect and modify HTTP traffic passing through the Zentinel proxy. They communicate with Zentinel over Unix sockets using a length-prefixed JSON protocol.
+Zentinel agents are external processors that can inspect and modify HTTP traffic passing through the Zentinel proxy. They communicate with Zentinel over Unix sockets (UDS) or gRPC using the v2 agent protocol.
 
 Agents can:
 
@@ -95,11 +95,11 @@ mix run --no-halt -e 'ZentinelAgentSdk.run(MyAgent, socket: "/tmp/my-agent.sock"
 
 ## Protocol
 
-The SDK implements version 1 of the Zentinel Agent Protocol:
+The SDK implements version 2 of the Zentinel Agent Protocol:
 
 - **Transport**: Unix domain sockets (UDS) or gRPC
-- **Encoding**: Length-prefixed JSON (4-byte big-endian length prefix) for UDS
-- **Max message size**: 10MB
+- **Encoding**: Length-prefixed binary (4-byte big-endian length + 1-byte type prefix) for UDS
+- **Max message size**: 16 MB (UDS) / 10 MB (gRPC)
 
 For the canonical protocol specification, including wire format details, event types, and architectural diagrams, see the [Zentinel Agent Protocol documentation](https://github.com/zentinelproxy/zentinel/tree/main/crates/agent-protocol).
 
