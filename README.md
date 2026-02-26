@@ -86,7 +86,7 @@ mix run --no-halt -e 'ZentinelAgentSdk.run(MyAgent, socket: "/tmp/my-agent.sock"
 | **Request/Response Wrappers** | Ergonomic access to headers, body, query params, metadata |
 | **Typed Configuration** | `ConfigurableAgent` behaviour with struct-based config support |
 | **OTP Native** | Built on OTP for reliable, concurrent processing |
-| **Protocol Compatible** | Full compatibility with Zentinel agent protocol v1 |
+| **Protocol Compatible** | Full compatibility with Zentinel agent protocol v2 |
 
 ## Why Agents?
 
@@ -471,7 +471,7 @@ zentinel-agent-elixir-sdk/
 
 ## Protocol
 
-This SDK implements Zentinel Agent Protocol v1:
+This SDK implements Zentinel Agent Protocol v2:
 
 - **Transport**: Unix domain sockets (UDS) or gRPC
 - **Encoding**: Length-prefixed JSON (4-byte big-endian length prefix) for UDS

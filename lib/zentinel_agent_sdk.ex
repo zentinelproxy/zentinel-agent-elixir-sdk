@@ -10,10 +10,9 @@ defmodule ZentinelAgentSdk do
 
   The SDK supports two protocol versions:
 
-  - **v1 (Legacy)** - JSON over UDS, simple request/response
-  - **v2 (Current)** - Enhanced protocol with capabilities, health checks, metrics
+  - **v2 (Default)** - Enhanced protocol with capabilities, health checks, metrics
 
-  ## Quick Start (v1)
+  ## Quick Start
 
       defmodule MyAgent do
         use ZentinelAgentSdk.Agent
@@ -65,7 +64,7 @@ defmodule ZentinelAgentSdk do
       # Run with v2 protocol
       ZentinelAgentSdk.V2.run(MyAgentV2)
 
-  ## Core Modules (v1)
+  ## Core Modules
 
   - `ZentinelAgentSdk.Agent` - The behaviour for implementing agents
   - `ZentinelAgentSdk.ConfigurableAgent` - For agents with typed configuration

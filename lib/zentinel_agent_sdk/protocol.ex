@@ -6,7 +6,7 @@ defmodule ZentinelAgentSdk.Protocol do
   between the Zentinel proxy and agents over Unix sockets.
   """
 
-  @protocol_version 1
+  @protocol_version 2
   @max_message_size 10 * 1024 * 1024
 
   @doc "Returns the current protocol version."
@@ -576,7 +576,7 @@ defmodule ZentinelAgentSdk.Protocol do
             websocket_decision: map() | nil
           }
 
-    defstruct version: 1,
+    defstruct version: 2,
               decision: "allow",
               request_headers: [],
               response_headers: [],
