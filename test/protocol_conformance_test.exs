@@ -10,6 +10,7 @@ defmodule ProtocolConformanceTest do
 
   alias ZentinelAgentSdk.Decision
   alias ZentinelAgentSdk.Protocol
+
   alias ZentinelAgentSdk.Protocol.{
     HeaderOp,
     RequestBodyChunkEvent,
@@ -18,8 +19,8 @@ defmodule ProtocolConformanceTest do
   }
 
   describe "Protocol Version" do
-    test "protocol version is 1" do
-      assert Protocol.protocol_version() == 1
+    test "protocol version is 2" do
+      assert Protocol.protocol_version() == 2
     end
   end
 
@@ -242,7 +243,7 @@ defmodule ProtocolConformanceTest do
     test "request envelope structure" do
       # This is what the proxy sends to agents
       envelope = %{
-        "version" => 1,
+        "version" => 2,
         "event_type" => "request_headers",
         "payload" => %{
           "metadata" => %{
@@ -298,7 +299,7 @@ defmodule ProtocolConformanceTest do
       parsed = Jason.decode!(json_str)
 
       # Verify structure matches Rust expectations
-      assert parsed["version"] == 1
+      assert parsed["version"] == 2
       assert parsed["decision"]["block"]["status"] == 403
       assert parsed["decision"]["block"]["body"] == "Access denied"
       assert parsed["audit"]["tags"] == ["security"]

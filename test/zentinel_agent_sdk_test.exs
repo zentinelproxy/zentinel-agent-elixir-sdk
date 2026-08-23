@@ -159,7 +159,7 @@ defmodule ZentinelAgentSdkTest do
 
       map = Decision.to_map(decision)
 
-      assert map["version"] == 1
+      assert map["version"] == 2
       assert map["decision"] == %{"block" => %{"status" => 403, "body" => "Blocked"}}
       assert map["audit"]["tags"] == ["security"]
     end
