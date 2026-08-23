@@ -1,0 +1,67 @@
+# Compile, test and format-check the SDK on every push and pull request.
+#
+# This repository had no CI. Four tests had been failing since the v1 to v2
+# protocol migration and nothing noticed, because nothing ran them.
+#
+# The steps are the ones verified passing locally when this was added. There is
+# no --warnings-as-errors: the tree currently compiles with warnings, and
+# turning those into failures is a separate cleanup rather than something to
+# smuggle in with a workflow.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Compile and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Erlang and Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          # mix.exs requires ~> 1.15.
+          elixir-version: "1.15"
+          otp-version: "26"
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-
+
+      - name: Fetch dependencies
+        run: mix deps.get
+
+      - name: Compile
+        run: mix compile
+
+      - name: Test
+        run: mix test
+
+  format:
+    name: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Erlang and Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.15"
+          otp-version: "26"
+
+      - name: Check formatting
+        run: mix format --check-formatted
