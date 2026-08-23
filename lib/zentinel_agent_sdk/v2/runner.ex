@@ -287,7 +287,11 @@ defmodule ZentinelAgentSdk.V2.Runner do
       {:ok, %{"event_type" => "handshake_init"} = _init} ->
         # Build and send our handshake request
         request = Handler.get_handshake_request(handler, config.auth_token)
-        request_map = %{"event_type" => "handshake_request", "payload" => HandshakeRequest.to_map(request)}
+
+        request_map = %{
+          "event_type" => "handshake_request",
+          "payload" => HandshakeRequest.to_map(request)
+        }
 
         case Protocol.write_message(socket, request_map) do
           :ok ->
@@ -314,7 +318,10 @@ defmodule ZentinelAgentSdk.V2.Runner do
       {:ok, %{"event_type" => event_type}} ->
         # Proxy didn't send handshake init, might be v1 compatible
         # Send capabilities proactively
-        Logger.debug("No handshake init received (got #{event_type}), proceeding with v1 compatibility")
+        Logger.debug(
+          "No handshake init received (got #{event_type}), proceeding with v1 compatibility"
+        )
+
         {:ok, nil}
 
       {:ok, msg} when is_map(msg) ->
@@ -451,7 +458,11 @@ defmodule ZentinelAgentSdk.V2.Runner do
   defp perform_reverse_handshake(socket, handler, config) do
     # For reverse connections, we initiate the handshake
     request = Handler.get_handshake_request(handler, config.auth_token)
-    request_map = %{"event_type" => "handshake_request", "payload" => HandshakeRequest.to_map(request)}
+
+    request_map = %{
+      "event_type" => "handshake_request",
+      "payload" => HandshakeRequest.to_map(request)
+    }
 
     case send_message(socket, request_map) do
       :ok ->

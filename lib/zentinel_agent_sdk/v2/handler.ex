@@ -663,7 +663,9 @@ defmodule ZentinelAgentSdk.V2.Handler do
   defp handle_drain_event(state, payload) do
     drain_request = DrainRequest.from_map(payload)
 
-    Logger.info("Drain event: timeout=#{drain_request.timeout_ms}ms, reason=#{drain_request.reason}")
+    Logger.info(
+      "Drain event: timeout=#{drain_request.timeout_ms}ms, reason=#{drain_request.reason}"
+    )
 
     # Notify agent
     if function_exported?(state.agent_module, :on_drain, 2) do
