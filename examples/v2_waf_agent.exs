@@ -313,6 +313,7 @@ end
       log_level: :string,
       json_logs: :boolean,
       transport: :string,
+      grpc_address: :string,
       proxy_url: :string,
       auth_token: :string
     ]
@@ -321,6 +322,8 @@ end
 transport =
   case Keyword.get(opts, :transport, "uds") do
     "uds" -> :uds
+    "grpc" -> :grpc
+    "both" -> :both
     "reverse" -> :reverse
     other -> raise "Unknown transport: #{other}"
   end
@@ -335,6 +338,7 @@ auth_token = Keyword.get(opts, :auth_token)
 ZentinelAgentSdk.V2.run(WafAgentV2,
   transport: transport,
   socket: socket,
+  grpc_address: Keyword.get(opts, :grpc_address, "127.0.0.1:50051"),
   proxy_url: proxy_url,
   auth_token: auth_token,
   log_level: log_level,

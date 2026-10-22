@@ -611,6 +611,9 @@ defmodule ZentinelAgentSdk.Protocol do
   @doc """
   Encode a message with length prefix for socket transmission.
 
+  This is the legacy v1 framing (length + JSON, no message-type byte), which
+  the proxy no longer speaks. The v2 framing is in `ZentinelAgentSdk.V2.UDS`.
+
   Returns `{:ok, binary}` on success, `{:error, reason}` on failure.
   """
   @spec encode_message(map()) :: {:ok, binary()} | {:error, String.t()}
@@ -627,6 +630,9 @@ defmodule ZentinelAgentSdk.Protocol do
 
   @doc """
   Decode a length-prefixed message.
+
+  This is the legacy v1 framing (length + JSON, no message-type byte), which
+  the proxy no longer speaks. The v2 framing is in `ZentinelAgentSdk.V2.UDS`.
 
   Returns `{:ok, map}` on success, `{:error, reason}` on failure.
   """
@@ -652,6 +658,9 @@ defmodule ZentinelAgentSdk.Protocol do
 
   @doc """
   Read a length-prefixed message from a socket.
+
+  This is the legacy v1 framing (length + JSON, no message-type byte), which
+  the proxy no longer speaks. The v2 framing is in `ZentinelAgentSdk.V2.UDS`.
 
   Returns `{:ok, map}` on success, `{:error, reason}` on failure, or `:closed` if connection closed.
   """
@@ -687,6 +696,9 @@ defmodule ZentinelAgentSdk.Protocol do
 
   @doc """
   Write a length-prefixed message to a socket.
+
+  This is the legacy v1 framing (length + JSON, no message-type byte), which
+  the proxy no longer speaks. The v2 framing is in `ZentinelAgentSdk.V2.UDS`.
 
   Returns `:ok` on success, `{:error, reason}` on failure.
   """
