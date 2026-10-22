@@ -9,7 +9,8 @@ defmodule ZentinelAgentSdk.V2 do
   - **Metrics collection** - Agents can expose custom metrics
   - **Request cancellation** - Proxy can cancel in-flight requests
   - **Graceful shutdown** - Drain support for zero-downtime deployments
-  - **Multiple transports** - UDS, gRPC, and reverse connections
+  - **Transports** - Unix domain socket and gRPC (plus reverse connections,
+    which the `zentinel` binary does not accept yet)
 
   ## Quick Start
 
@@ -67,6 +68,8 @@ defmodule ZentinelAgentSdk.V2 do
   ### Runtime
   - `ZentinelAgentSdk.V2.Handler` - Event handler GenServer
   - `ZentinelAgentSdk.V2.Runner` - Agent runner with transport support
+  - `ZentinelAgentSdk.V2.UDS` - Unix socket framing and message types
+  - `ZentinelAgentSdk.V2.GrpcServer` - The `AgentServiceV2` gRPC service
 
   ## Transports
 
@@ -79,9 +82,23 @@ defmodule ZentinelAgentSdk.V2 do
         socket: "/var/run/zentinel/agent.sock"
       )
 
+  ### gRPC
+
+  `zentinel.agent.v2.AgentServiceV2` over HTTP/2, for an agent configured
+  in Zentinel with `grpc "http://host:port"`.
+
+      ZentinelAgentSdk.V2.run(MyAgent,
+        transport: :grpc,
+        grpc_address: "127.0.0.1:50051"
+      )
+
+  `transport: :both` serves the socket and gRPC together.
+
   ### Reverse Connection
 
-  For agents that need to connect to the proxy (e.g., behind NAT).
+  For agents that need to connect to the proxy (e.g., behind NAT). This
+  follows the protocol crate's `ReverseConnectionListener` registration;
+  the `zentinel` binary does not open such a listener yet.
 
       ZentinelAgentSdk.V2.run(MyAgent,
         transport: :reverse,
@@ -132,11 +149,14 @@ defmodule ZentinelAgentSdk.V2 do
   ## Options
 
   ### Transport Selection
-  - `:transport` - Transport type: `:uds` (default), `:reverse`
+  - `:transport` - Transport type: `:uds` (default), `:grpc`, `:both`, `:reverse`
 
   ### UDS Options
   - `:socket` - Unix socket path (default: "/tmp/zentinel-agent.sock")
   - `:socket_permissions` - File permissions (default: 0o660)
+
+  ### gRPC Options
+  - `:grpc_address` - `"host:port"` to listen on (default: "0.0.0.0:50051")
 
   ### Reverse Connection Options
   - `:proxy_url` - URL of proxy's agent registration endpoint

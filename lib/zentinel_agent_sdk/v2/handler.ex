@@ -12,6 +12,13 @@ defmodule ZentinelAgentSdk.V2.Handler do
 
   This handler is used internally by the V2 runner and should not
   be used directly. Use `ZentinelAgentSdk.V2.Runner` instead.
+
+  One handler serves every connection and transport of a runner: the proxy
+  keeps a pool of connections per agent and may send a request's headers on
+  one connection and its body on another, so per-request state lives here
+  rather than in a connection. Every event returns an `AgentResponse` map in
+  the JSON shape of the proxy's `zentinel_agent_protocol::AgentResponse`.
+  Agent callbacks run in this process, one event at a time.
   """
 
   use GenServer
@@ -96,7 +103,36 @@ defmodule ZentinelAgentSdk.V2.Handler do
   """
   @spec handle_event(GenServer.server(), map()) :: map()
   def handle_event(handler, event) do
-    GenServer.call(handler, {:event, event})
+    case GenServer.call(handler, {:event, event}, :infinity) do
+      {:run, fun} -> run_callback(fun, event)
+      response -> response
+    end
+  end
+
+  # Agent callbacks for request events run in the caller's process, so
+  # events of different requests are handled concurrently; the handler
+  # process only keeps the per-request state.
+  defp run_callback(fun, event) do
+    fun.()
+  rescue
+    e ->
+      Logger.error(
+        "Error handling event #{Map.get(event, "event_type", "")}: #{Exception.message(e)}"
+      )
+
+      allow_map()
+  end
+
+  @doc """
+  Handle one event, given its type (e.g. `"request_headers"`) and payload in
+  the proxy's JSON shape, and return the `AgentResponse` map.
+
+  A `"configure"` event returns an allow response when the agent accepted the
+  configuration and a block response when it rejected it.
+  """
+  @spec dispatch(GenServer.server(), String.t(), map()) :: map()
+  def dispatch(handler, event_type, payload) do
+    handle_event(handler, %{"event_type" => event_type, "payload" => payload || %{}})
   end
 
   @doc """
@@ -251,6 +287,7 @@ defmodule ZentinelAgentSdk.V2.Handler do
 
     state = %State{
       agent_module: agent_module,
+      agent_config: initial_config(agent_module, is_configurable),
       capabilities: capabilities,
       is_configurable: is_configurable
     }
@@ -298,7 +335,10 @@ defmodule ZentinelAgentSdk.V2.Handler do
       # Apply config from handshake if present
       state =
         if map_size(response.config) > 0 do
-          apply_config(state, response.config)
+          case apply_config(state, response.config) do
+            {:ok, state} -> state
+            {:error, _reason, state} -> state
+          end
         else
           state
         end
@@ -405,7 +445,7 @@ defmodule ZentinelAgentSdk.V2.Handler do
 
         _ ->
           Logger.warning("Unknown event type: #{event_type}")
-          {Decision.allow() |> Decision.to_map(), state}
+          {allow_map(), state}
       end
     rescue
       e ->
@@ -414,11 +454,30 @@ defmodule ZentinelAgentSdk.V2.Handler do
     end
   end
 
+  # The proxy sends `{"config": ..., "config_version": ...}` after the
+  # handshake on every connection, and uses the connection only once the
+  # reply allows it. A block reply rejects the configuration.
   defp handle_configure(state, payload) do
     event = ConfigureEvent.from_map(payload)
-    new_state = apply_config(state, event.config)
-    {%{"success" => true}, new_state}
+
+    case apply_config(state, event.config || %{}) do
+      {:ok, new_state} ->
+        {allow_map(), new_state}
+
+      {:error, reason, new_state} ->
+        {Decision.block(500)
+         |> Decision.with_body("Configuration rejected: #{reason}")
+         |> Decision.to_map(), new_state}
+    end
   end
+
+  defp initial_config(agent_module, true) do
+    if function_exported?(agent_module, :default_config, 0),
+      do: agent_module.default_config(),
+      else: nil
+  end
+
+  defp initial_config(_agent_module, false), do: nil
 
   defp apply_config(state, config) do
     if state.is_configurable do
@@ -428,19 +487,28 @@ defmodule ZentinelAgentSdk.V2.Handler do
         state.agent_module.on_config_applied(parsed_config)
       end
 
-      %{state | agent_config: parsed_config}
+      Logger.info("Configuration applied")
+      {:ok, %{state | agent_config: parsed_config}}
     else
       case state.agent_module.on_configure(config) do
         :ok ->
-          Logger.info("Agent configured")
-          state
+          Logger.info("Configuration applied")
+          {:ok, state}
 
         {:error, reason} ->
-          Logger.error("Configuration failed: #{reason}")
-          state
+          Logger.error("Configuration rejected: #{reason}")
+          {:error, reason, state}
       end
     end
+  rescue
+    e ->
+      Logger.error("Configuration rejected: #{Exception.message(e)}")
+      {:error, Exception.message(e), state}
   end
+
+  defp allow_map, do: Decision.allow() |> Decision.to_map()
+
+  defp deferred(fun), do: {:run, fn -> Decision.to_map(fun.()) end}
 
   defp handle_request_headers(state, payload) do
     event = RequestHeadersEvent.from_map(payload)
@@ -463,14 +531,15 @@ defmodule ZentinelAgentSdk.V2.Handler do
        |> Decision.with_body("Request cancelled")
        |> Decision.to_map(), state}
     else
-      decision =
-        if state.is_configurable do
-          state.agent_module.on_request(request, state.agent_config)
-        else
-          state.agent_module.on_request(request)
-        end
+      {mod, cfg, configurable?} = {state.agent_module, state.agent_config, state.is_configurable}
 
-      {Decision.to_map(decision), state}
+      {deferred(fn ->
+         if configurable? do
+           mod.on_request(request, cfg)
+         else
+           mod.on_request(request)
+         end
+       end), state}
     end
   end
 
@@ -503,14 +572,15 @@ defmodule ZentinelAgentSdk.V2.Handler do
           |> Map.get(correlation_id)
           |> Request.with_body(Map.get(state.request_bodies, correlation_id, <<>>))
 
-        decision =
-          if state.is_configurable do
-            state.agent_module.on_request_body(request, state.agent_config)
-          else
-            state.agent_module.on_request_body(request)
-          end
+        {mod, cfg, configurable?} = {state.agent_module, state.agent_config, state.is_configurable}
 
-        {Decision.to_map(decision), state}
+        {deferred(fn ->
+           if configurable? do
+             mod.on_request_body(request, cfg)
+           else
+             mod.on_request_body(request)
+           end
+         end), state}
       else
         {Decision.allow() |> Decision.needs_more_data() |> Decision.to_map(), state}
       end
@@ -535,14 +605,15 @@ defmodule ZentinelAgentSdk.V2.Handler do
           response_events: Map.put(state.response_events, correlation_id, event)
       }
 
-      decision =
-        if state.is_configurable do
-          state.agent_module.on_response(request, response, state.agent_config)
-        else
-          state.agent_module.on_response(request, response)
-        end
+      {mod, cfg, configurable?} = {state.agent_module, state.agent_config, state.is_configurable}
 
-      {Decision.to_map(decision), state}
+      {deferred(fn ->
+         if configurable? do
+           mod.on_response(request, response, cfg)
+         else
+           mod.on_response(request, response)
+         end
+       end), state}
     end
   end
 
@@ -579,14 +650,15 @@ defmodule ZentinelAgentSdk.V2.Handler do
         Response.new(response_event)
         |> Response.with_body(Map.get(state.response_bodies, correlation_id, <<>>))
 
-      decision =
-        if state.is_configurable do
-          state.agent_module.on_response_body(request, response, state.agent_config)
-        else
-          state.agent_module.on_response_body(request, response)
-        end
+      {mod, cfg, configurable?} = {state.agent_module, state.agent_config, state.is_configurable}
 
-      {Decision.to_map(decision), state}
+      {deferred(fn ->
+         if configurable? do
+           mod.on_response_body(request, response, cfg)
+         else
+           mod.on_response_body(request, response)
+         end
+       end), state}
     else
       {Decision.allow() |> Decision.needs_more_data() |> Decision.to_map(), state}
     end
@@ -609,26 +681,34 @@ defmodule ZentinelAgentSdk.V2.Handler do
         cancelled_requests: MapSet.delete(state.cancelled_requests, correlation_id)
     }
 
-    if request != nil do
-      if state.is_configurable do
-        state.agent_module.on_request_complete(
-          request,
-          event.status,
-          event.duration_ms,
-          state.agent_config
-        )
-      else
-        state.agent_module.on_request_complete(request, event.status, event.duration_ms)
-      end
-    end
+    {mod, cfg, configurable?} = {state.agent_module, state.agent_config, state.is_configurable}
 
-    {%{"success" => true}, state}
+    result =
+      if request != nil do
+        {:run,
+         fn ->
+           if configurable? do
+             mod.on_request_complete(request, event.status, event.duration_ms, cfg)
+           else
+             mod.on_request_complete(request, event.status, event.duration_ms)
+           end
+
+           allow_map()
+         end}
+      else
+        allow_map()
+      end
+
+    {result, state}
   end
 
   defp handle_guardrail_inspect(state, payload) do
     event = GuardrailInspectEvent.from_map(payload)
-    response = state.agent_module.on_guardrail_inspect(event)
+    mod = state.agent_module
+    {{:run, fn -> guardrail_result(mod.on_guardrail_inspect(event)) end}, state}
+  end
 
+  defp guardrail_result(response) do
     audit_response = %{
       "tags" => if(response.detected, do: ["guardrail_detected"], else: []),
       "rule_ids" => Enum.map(response.detections, & &1.category),
@@ -638,7 +718,14 @@ defmodule ZentinelAgentSdk.V2.Handler do
       }
     }
 
-    {%{"version" => 2, "audit" => audit_response}, state}
+    # The proxy reads the result from routing_metadata["guardrail_response"]
+    # (a serialized GuardrailResponse); without it, it infers one from the
+    # decision, and an allow would mean "nothing detected".
+    allow_map()
+    |> Map.put("audit", audit_response)
+    |> Map.put("routing_metadata", %{
+      "guardrail_response" => Jason.encode!(GuardrailResponse.to_map(response))
+    })
   end
 
   defp handle_cancel(state, payload) do
@@ -657,7 +744,7 @@ defmodule ZentinelAgentSdk.V2.Handler do
       state.agent_module.on_cancel(cancel_request.request_id, cancel_request)
     end
 
-    {%{"success" => true}, state}
+    {allow_map(), state}
   end
 
   defp handle_drain_event(state, payload) do
@@ -674,7 +761,7 @@ defmodule ZentinelAgentSdk.V2.Handler do
 
     pending_count = MapSet.size(state.pending_requests)
 
-    {%{"success" => true, "pending_requests" => pending_count},
+    {allow_map() |> Map.put("pending_requests", pending_count),
      %{state | draining: true, drain_timeout: drain_request.timeout_ms}}
   end
 
@@ -741,6 +828,6 @@ defmodule ZentinelAgentSdk.V2.Handler do
         pending_requests: MapSet.delete(state.pending_requests, correlation_id)
     }
 
-    {%{"success" => true}, state}
+    {allow_map(), state}
   end
 end

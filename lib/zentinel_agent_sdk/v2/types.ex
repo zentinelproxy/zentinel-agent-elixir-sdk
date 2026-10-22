@@ -304,6 +304,74 @@ defmodule ZentinelAgentSdk.V2.Types do
       end
     end
 
+    @doc """
+    The events these capabilities handle, as protocol event type names
+    (`"request_headers"`, `"request_body_chunk"`, ...).
+    """
+    @spec supported_events(t()) :: [String.t()]
+    def supported_events(%__MODULE__{} = caps) do
+      [
+        {caps.handles_request_headers, "request_headers"},
+        {caps.handles_request_body, "request_body_chunk"},
+        {caps.handles_response_headers, "response_headers"},
+        {caps.handles_response_body, "response_body_chunk"},
+        {true, "request_complete"},
+        {caps.handles_websocket_frames, "websocket_frame"},
+        {caps.handles_guardrail_inspect, "guardrail_inspect"}
+      ]
+      |> Enum.filter(&elem(&1, 0))
+      |> Enum.map(&elem(&1, 1))
+    end
+
+    @doc """
+    The protocol's feature flags for these capabilities.
+
+    `health_reporting`, `metrics_export`, `config_push` and `flow_control` are
+    false: the runner does not send health, metrics, config-update or
+    flow-control messages, so it does not claim to.
+    """
+    @spec features(t()) :: map()
+    def features(%__MODULE__{} = caps) do
+      %{
+        "streaming_body" => caps.supports_streaming,
+        "websocket" => caps.handles_websocket_frames,
+        "guardrails" => caps.handles_guardrail_inspect,
+        "config_push" => false,
+        "metrics_export" => false,
+        "concurrent_requests" => caps.max_concurrent_requests || 10,
+        "cancellation" => caps.supports_cancellation,
+        "flow_control" => false,
+        "health_reporting" => false
+      }
+    end
+
+    @doc "The protocol's resource limits for these capabilities."
+    @spec limits(t()) :: map()
+    def limits(%__MODULE__{} = caps) do
+      %{
+        "max_body_size" => 10 * 1024 * 1024,
+        "max_concurrency" => caps.max_concurrent_requests || 100,
+        "preferred_chunk_size" => 64 * 1024
+      }
+    end
+
+    @doc """
+    Serialize as the UDS handshake's `capabilities` (the proxy's
+    `UdsCapabilities`). Every field is required by the proxy.
+    """
+    @spec to_uds_map(t()) :: map()
+    def to_uds_map(%__MODULE__{} = caps) do
+      %{
+        "agent_id" => caps.agent_name,
+        "name" => caps.agent_name,
+        "version" => caps.agent_version,
+        "supported_events" =>
+          caps |> supported_events() |> Enum.map(&ZentinelAgentSdk.V2.UDS.uds_event_number/1),
+        "features" => features(caps),
+        "limits" => limits(caps)
+      }
+    end
+
     @doc "Create from a map."
     @spec from_map(map()) :: t()
     def from_map(data) when is_map(data) do

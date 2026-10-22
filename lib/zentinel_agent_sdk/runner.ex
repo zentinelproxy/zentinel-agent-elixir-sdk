@@ -35,6 +35,9 @@ end
 # Define Handler next
 defmodule ZentinelAgentSdk.Runner.Handler do
   @moduledoc false
+  # A per-connection event dispatcher from the v1 runner, kept for callers
+  # of its API. `ZentinelAgentSdk.Runner.run/2` no longer uses it: it serves
+  # agents through `ZentinelAgentSdk.V2.Runner`.
 
   require Logger
 
@@ -337,7 +340,10 @@ defmodule ZentinelAgentSdk.Runner do
   @moduledoc """
   Runner for starting and managing an agent.
 
-  Starts a Unix socket server and routes protocol events to the agent.
+  Serves the agent on agent protocol v2 over a Unix socket. It is the same
+  server as `ZentinelAgentSdk.V2.run/2` with `transport: :uds`: the v2
+  handler accepts `ZentinelAgentSdk.Agent` and
+  `ZentinelAgentSdk.ConfigurableAgent` modules as they are.
 
   ## Example
 
@@ -352,10 +358,6 @@ defmodule ZentinelAgentSdk.Runner do
       )
   """
 
-  require Logger
-
-  alias ZentinelAgentSdk.Runner.{Config, Handler}
-
   @doc """
   Run an agent with the given options.
 
@@ -369,126 +371,7 @@ defmodule ZentinelAgentSdk.Runner do
   """
   @spec run(module(), keyword()) :: :ok | {:error, term()}
   def run(agent_module, opts \\ []) do
-    config = Config.new(agent_module, opts)
-    setup_logging(config)
-
-    socket_path = config.socket_path
-
-    # Clean up existing socket
-    if File.exists?(socket_path) do
-      File.rm!(socket_path)
-    end
-
-    # Ensure parent directory exists
-    socket_path |> Path.dirname() |> File.mkdir_p!()
-
-    Logger.info("Agent '#{config.name}' starting on #{socket_path}")
-
-    # Start listening on Unix socket
-    {:ok, listen_socket} =
-      :gen_tcp.listen(0, [
-        :binary,
-        {:packet, :raw},
-        {:active, false},
-        {:reuseaddr, true},
-        {:ifaddr, {:local, String.to_charlist(socket_path)}}
-      ])
-
-    # Set socket permissions
-    File.chmod!(socket_path, 0o660)
-
-    # Set up signal handling via trap_exit
-    Process.flag(:trap_exit, true)
-
-    Logger.info("Agent '#{config.name}' listening on #{socket_path}")
-
-    try do
-      accept_loop(listen_socket, agent_module, config)
-    after
-      :gen_tcp.close(listen_socket)
-
-      if File.exists?(socket_path) do
-        File.rm!(socket_path)
-      end
-
-      Logger.info("Agent shutdown complete")
-    end
-
-    :ok
-  end
-
-  defp accept_loop(listen_socket, agent_module, config) do
-    case :gen_tcp.accept(listen_socket, 1000) do
-      {:ok, client_socket} ->
-        Logger.debug("New connection accepted")
-        spawn_link(fn -> handle_connection(client_socket, agent_module, config) end)
-        accept_loop(listen_socket, agent_module, config)
-
-      {:error, :timeout} ->
-        # Check for shutdown signal
-        receive do
-          {:EXIT, _pid, _reason} ->
-            Logger.info("Shutdown signal received")
-            :ok
-        after
-          0 -> accept_loop(listen_socket, agent_module, config)
-        end
-
-      {:error, :closed} ->
-        Logger.info("Listen socket closed")
-        :ok
-
-      {:error, reason} ->
-        Logger.error("Accept error: #{inspect(reason)}")
-        :ok
-    end
-  end
-
-  defp handle_connection(socket, agent_module, config) do
-    handler = Handler.new(agent_module, config)
-
-    try do
-      connection_loop(socket, handler)
-    rescue
-      e ->
-        Logger.error("Connection error: #{inspect(e)}")
-    after
-      :gen_tcp.close(socket)
-      Logger.debug("Connection closed")
-    end
-  end
-
-  defp connection_loop(socket, handler) do
-    case ZentinelAgentSdk.Protocol.read_message(socket) do
-      {:ok, message} ->
-        {response, handler} = Handler.handle_event(handler, message)
-
-        case ZentinelAgentSdk.Protocol.write_message(socket, response) do
-          :ok ->
-            connection_loop(socket, handler)
-
-          {:error, reason} ->
-            Logger.error("Failed to send response: #{reason}")
-        end
-
-      :closed ->
-        :ok
-
-      {:error, reason} ->
-        Logger.error("Failed to read message: #{reason}")
-    end
-  end
-
-  defp setup_logging(%Config{log_level: level, json_logs: json_logs, name: name}) do
-    # Configure Logger
-    Logger.configure(level: level)
-
-    if json_logs do
-      # JSON logging would need a custom backend or formatter
-      # For now, we'll just note it in the metadata
-      Logger.metadata(agent: name, format: :json)
-    else
-      Logger.metadata(agent: name)
-    end
+    opts = Keyword.take(opts, [:socket, :log_level, :json_logs])
+    ZentinelAgentSdk.V2.Runner.run(agent_module, [transport: :uds] ++ opts)
   end
 end

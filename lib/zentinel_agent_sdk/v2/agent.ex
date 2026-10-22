@@ -96,6 +96,8 @@ defmodule ZentinelAgentSdk.V2.Agent do
 
   This is called during handshake to inform the proxy what
   event types the agent handles and what features it supports.
+  Optional: without it, capabilities are derived from `name/0`,
+  `version/0` and the callbacks the agent implements.
   """
   @callback capabilities() :: AgentCapabilities.t()
 
@@ -293,7 +295,8 @@ defmodule ZentinelAgentSdk.V2.Agent do
   # Optional Callbacks Declaration
   # ============================================================================
 
-  @optional_callbacks version: 0,
+  @optional_callbacks capabilities: 0,
+                      version: 0,
                       on_configure: 1,
                       on_request: 1,
                       on_request_body: 1,
@@ -500,7 +503,8 @@ defmodule ZentinelAgentSdk.V2.ConfigurableAgent do
   @callback health_check(config :: term()) :: HealthStatus.t()
   @callback metrics(config :: term()) :: MetricsReport.t()
 
-  @optional_callbacks version: 0,
+  @optional_callbacks capabilities: 0,
+                      version: 0,
                       on_config_applied: 1,
                       on_request: 2,
                       on_request_body: 2,

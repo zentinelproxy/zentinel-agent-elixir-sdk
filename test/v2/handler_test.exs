@@ -218,7 +218,7 @@ defmodule ZentinelAgentSdk.V2.HandlerTest do
 
       response = Handler.handle_event(handler, cancel_event)
 
-      assert response["success"] == true
+      assert response["decision"] == "allow"
 
       GenServer.stop(handler)
     end
@@ -236,7 +236,7 @@ defmodule ZentinelAgentSdk.V2.HandlerTest do
 
       response = Handler.handle_event(handler, event)
 
-      assert response["success"] == true
+      assert response["decision"] == "allow"
 
       GenServer.stop(handler)
     end

@@ -4,7 +4,7 @@ This guide will help you create your first Zentinel agent in under 5 minutes.
 
 ## Prerequisites
 
-- Elixir 1.17+
+- Elixir 1.18+
 - Erlang 27+
 - Zentinel proxy (for testing with real traffic)
 
@@ -109,7 +109,7 @@ SOCKET_PATH=/tmp/my-agent.sock mix run --no-halt
 You should see:
 
 ```
-[info] Agent 'my-agent' listening on /tmp/my-agent.sock
+[info] V2 agent 'my-agent' listening on /tmp/my-agent.sock
 ```
 
 ## Step 6: Configure Zentinel
