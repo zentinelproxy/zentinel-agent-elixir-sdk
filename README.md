@@ -29,7 +29,7 @@ The SDK gives you an agent behaviour with one callback per event, a pipeable
 with Unix socket and gRPC transports and supervision via `child_spec`. It is
 not on Hex; use it as a GitHub dependency.
 
-> **Status (0.3.0, checked on 2026-10-22 against Zentinel `main`):** agents
+> **Status (0.3.0, checked on 2026-10-22 against Zentinel 26.10_8):** agents
 > built with this SDK pass the [SDK conformance harness][harness] over both
 > the Unix socket and gRPC: handshake, configuration delivery, request and
 > response header mutations, blocking, request body inspection, and
@@ -38,8 +38,9 @@ not on Hex; use it as a GitHub dependency.
 > handshake (zentinel#600).
 >
 > Configuration delivery (an agent's `config { }` block reaching
-> `on_configure/1`) needs zentinel#603, which is on `main` but not yet in a
-> release; with Zentinel 0.6.50 and earlier the agent runs unconfigured.
+> `on_configure/1`) needs Zentinel 26.10_8 or later, which sends the block
+> on every connection (zentinel#603); releases up to 0.6.50 (26.10_7) never
+> did, so there the agent runs unconfigured.
 
 [harness]: https://github.com/zentinelproxy/zentinel/tree/main/sdk-conformance
 
