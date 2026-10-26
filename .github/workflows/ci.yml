@@ -100,18 +100,19 @@ jobs:
         # harness's start timeout.
         run: mix deps.get && mix compile
 
+      # Checked against the pinned Zentinel release. 26.10_8 is the first that
+      # delivers the agent's `config { }` block (zentinel#603), which the
+      # configure check needs.
       - name: Conformance agent (UDS + gRPC)
         uses: zentinelproxy/zentinel/sdk-conformance@main
         with:
-          # Config delivery (zentinel#603) is not in a release yet. Switch to
-          # `zentinel-version: <first release with #603>` once it ships.
-          zentinel-ref: main
+          zentinel-version: 26.10_8
           agent-command: mix run examples/conformance_agent.exs --socket {socket}
           grpc-agent-command: mix run examples/conformance_agent.exs --grpc {grpc}
 
       - name: README quick-start agent
         uses: zentinelproxy/zentinel/sdk-conformance@main
         with:
-          zentinel-ref: main
+          zentinel-version: 26.10_8
           profile: hello
           agent-command: mix run examples/hello_agent.exs {socket}
